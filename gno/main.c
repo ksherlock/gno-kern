@@ -442,18 +442,12 @@ endGNO:
 #pragma optimize 79
 #define KP_BUFSIZ 256
 int kern_printf(const char *format, ...) {
-    static char
-        buffer[KP_BUFSIZ]; /* pray this is large enough (need vsnprintf) */
+    static char buffer[KP_BUFSIZ];
     va_list list;
-    int ret;
 
     va_start(list, format);
-    ret = vsprintf(buffer, format, list);
-    if (ret >= KP_BUFSIZ) {
-        /* clang-format: off */
-        asm {brk 0xbf }
-        /* clang-format: on */
-    }
+    vsnprintf(buffer, KP_BUFSIZ, format, list);
+
     WriteCString(buffer);
     va_end(list);
     return ret;
