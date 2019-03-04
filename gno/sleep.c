@@ -18,27 +18,24 @@ extern void sleepbusy(void);
 #pragma optimize 79
 
 /*segment "KERN2     ";*/
+#include "/lang/orca/libraries/orcacdefs/stdio.h"
+#include "kernel.h"
 #include "proc.h"
 #include "sys.h"
-#include "kernel.h"
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
 extern kernelStructPtr kp;
 
-void dosleep(int pid)
-{
-    kp->procTable[pid].processState = procSLEEP;
-}
+void dosleep(int pid) { kp->procTable[pid].processState = procSLEEP; }
 
-static void ready(int pid, int resch)
-{
+static void ready(int pid, int resch) {
     kp->procTable[pid].processState = procREADY;
-    if (resch) _resched();
+    if (resch)
+        _resched();
 }
 
 #endif
 
 typedef struct hash_entry {
-    unsigned		pid;		/* first pool entry on the wait list */
+    unsigned pid; /* first pool entry on the wait list */
 } hash_entry;
 
 #define NUM_HVENTRIES 64
@@ -56,8 +53,7 @@ unsigned i;
 }
 #endif
 
-static unsigned hash_vector(unsigned long vec)
-{
+static unsigned hash_vector(unsigned long vec) {
     return (unsigned)(vec & 0x3F);
 }
 
@@ -99,37 +95,37 @@ byte oldBusy;
 #endif
 
 /* Remove a single process from a sleep vector */
-void k_remove(unsigned long vec, int pid, int readyq)
-{
-unsigned last = 0;
-unsigned hv;
-unsigned cur,link;
+void k_remove(unsigned long vec, int pid, int readyq) {
+    unsigned last = 0;
+    unsigned hv;
+    unsigned cur, link;
 
     /*fprintf(stderr,"removing %d from %06lX\n",pid,vec);*/
     disableps();
     hv = hash_vector(vec);
     cur = hv_tab[hv].pid;
     while (cur != 0) {
-	link = kp->procTable[cur].p_slink;
-	if ((kp->procTable[cur].p_waitvec == vec) && (cur == pid)) {
-	    /* Remove an item from the list. If the item is the first,
+        link = kp->procTable[cur].p_slink;
+        if ((kp->procTable[cur].p_waitvec == vec) && (cur == pid)) {
+            /* Remove an item from the list. If the item is the first,
                last == 0, and we set the hash vector to the follower
                of the item */
             if (last == 0) {
-        	hv_tab[hv].pid = link;
-	    }
+                hv_tab[hv].pid = link;
+            }
             /* Otherwise, the item is not the first; last != 0; we set
                last's link to the current link, removing the curproc
                from the list */
             else {
-        	kp->procTable[last].p_slink = kp->procTable[cur].p_slink;
-        	last = cur;
-	    }
-            if (readyq) ready(cur,0);
+                kp->procTable[last].p_slink = kp->procTable[cur].p_slink;
+                last = cur;
+            }
+            if (readyq)
+                ready(cur, 0);
             kp->procTable[cur].p_waitvec = 0l;
             cur = link;
         } else {
-	    last = cur;
+            last = cur;
             cur = link;
         }
     }
@@ -139,37 +135,36 @@ unsigned cur,link;
 }
 
 /* Remove all processes from a sleep vector */
-void k_wakeup(unsigned long vec)
-{
-unsigned last = 0;
-unsigned hv;
-unsigned cur,link;
+void k_wakeup(unsigned long vec) {
+    unsigned last = 0;
+    unsigned hv;
+    unsigned cur, link;
 
     /*fprintf(stderr,"waking up %06lX\n",vec);*/
     disableps();
     hv = hash_vector(vec);
     cur = hv_tab[hv].pid;
     while (cur != 0) {
-	link = kp->procTable[cur].p_slink;
-	if (kp->procTable[cur].p_waitvec == vec) {
-	    /* Remove an item from the list. If the item is the first,
+        link = kp->procTable[cur].p_slink;
+        if (kp->procTable[cur].p_waitvec == vec) {
+            /* Remove an item from the list. If the item is the first,
                last == 0, and we set the hash vector to the follower
                of the item */
             if (last == 0) {
-        	hv_tab[hv].pid = link;
-	    }
+                hv_tab[hv].pid = link;
+            }
             /* Otherwise, the item is not the first; last != 0; we set
                last's link to the current link, removing the curproc
                from the list */
             else {
-        	kp->procTable[last].p_slink = kp->procTable[cur].p_slink;
-        	last = cur;
-	    }
-            ready(cur,0);
+                kp->procTable[last].p_slink = kp->procTable[cur].p_slink;
+                last = cur;
+            }
+            ready(cur, 0);
             kp->procTable[cur].p_waitvec = 0l;
             cur = link;
         } else {
-	    last = cur;
+            last = cur;
             cur = link;
         }
     }
@@ -177,4 +172,3 @@ unsigned cur,link;
     /* if priority of a proc we awakened was higher than current priority
        we need to _resched() */
 }
-

@@ -5,8 +5,8 @@
  */
 #pragma optimize 79
 
-#define INITSTK 2000 /* stack size of initial process */
-#define INITPRIO 20	/* priority of initial process */
+#define INITSTK 2000         /* stack size of initial process */
+#define INITPRIO 20          /* priority of initial process */
 #define INITNAME "user_main" /* name of initial process */
 
 #include "conf.h"
@@ -26,7 +26,7 @@
 struct sentry *_semaph;
 /*struct sentry _semaph[NSEM]; /* semaphore table */
 int _nextsem; /* next semaphore slot to use in screate */
-#endif /* defined(NSEM) */
+#endif        /* defined(NSEM) */
 
 /*struct qstruct nq[NQS];*/
 struct qstruct *nq;
@@ -39,7 +39,7 @@ int _currpid; /* id of currently running process */
 
 /* real-time clock variables and sleeping process queue pointers */
 int _slnempty; /* FALSE if the sleep queue is empty */
-int *_sltop; /* address of key part of top entry in */
+int *_sltop;   /* address of key part of top entry in */
 
 /* the sleep queue of sleeping processes */
 int _clockq; /* head of queue of sleeping processes */
@@ -47,4 +47,3 @@ int _clockq; /* head of queue of sleeping processes */
 int _rdyhead; /* head of ready list (q indices) ... */
 int _rdytail; /* ... and the tail */
 #endif
-
