@@ -1066,6 +1066,7 @@ int KERNtcnewpgrp(int *ERRNO, int fdtty) {
 
     if (i == NPGRP) {
         enableps();
+        *ERRNO = EAGAIN;
         return -1;
     }
 
