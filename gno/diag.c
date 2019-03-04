@@ -67,11 +67,11 @@ void PANIC(char *str) {
     *((byte *)0xE0C022l) = 0x1F;
     /* clang-format: off */
     asm {
-      tsc
-      sta stack
-      lda >0xE0C029
-      and #0xFF7F
-      sta >0xE0C029
+        tsc
+        sta stack
+        lda >0xE0C029
+        and #0xFF7F
+        sta >0xE0C029
     }
     /* clang-format: on */
     /*

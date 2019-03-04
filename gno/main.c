@@ -330,14 +330,14 @@ int main(int argc, char *argv) {
 
     /* clang-format: off */
     asm {
-    	lda 0xE0C035
-    	sta state
-    	sep #0x30
-    	lda 0xE0C02D
-    	sta slot
-    	lda 0xE0C068
-    	sta statereg
-    	rep #0x30
+        lda 0xE0C035
+        sta state
+        sep #0x30
+        lda 0xE0C02D
+        sta slot
+        lda 0xE0C068
+        sta statereg
+        rep #0x30
     }
     /* clang-format: on */
 

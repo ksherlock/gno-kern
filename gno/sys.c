@@ -98,8 +98,8 @@ static word hiWord(longword w) {
 
     /* clang-format: off */
     asm {
-    lda w+2
-    sta h
+        lda w+2
+        sta h
     }
     /* clang-format: on */
 
@@ -111,8 +111,8 @@ static word loWord(longword w) {
 
     /* clang-format: off */
     asm {
-    lda w
-    sta l
+        lda w
+        sta l
     }
     /* clang-format: on */
 
@@ -942,8 +942,8 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     /* switch over to the new stack before we deallocate the one we're using */
     /* clang-format: off */
     asm {
-	lda newStack
-	tcs
+        lda newStack
+        tcs
     }
     /* clang-format: on */
 

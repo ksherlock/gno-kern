@@ -349,8 +349,8 @@ int KERNkill(int *ERRNO, int signum, int pid) {
 
                 /* clang-format: off */
                 asm {
-				lda nullproc_S
-				tcs
+                    lda nullproc_S
+                    tcs
                 }
                 /* clang-format: on */
             }
