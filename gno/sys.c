@@ -413,12 +413,21 @@ int KERNsetpgrp(int *ERRNO, int pgrp, int pid) {
         *ERRNO = ESRCH;
         return -1;
     }
-    if (kp->procTable[mpid].pgrp != pgrp) {
-        if (pgrp != 0)
+    disableps();
+    pp = kp->procTable[mpid].pgrp;
+    if (pp != pgrp) {
+        if (pgrp)
             pgrpInfo[pgrp - 2].pgrpref++;
-        if ((pp = kp->procTable[mpid].pgrp) != 0)
+        if (pp)
             pgrpInfo[pp - 2].pgrpref--;
     }
+    kp->procTable[mpid].pgrp = pgrp;
+
+    if (kp->gsosDebug & 16)
+        fprintf(stderr, "setpgrp: pid: %d, oldpgrp: %d, newpgrp: %d\n",
+            pid, pp, pgrp);
+
+    enableps();
     return 0;
 }
 
