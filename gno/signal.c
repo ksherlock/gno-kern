@@ -156,6 +156,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     }
     mpid = mapPID(pid);
     if (mpid == 0)
+        *ERRNO = EPERM;
         return -1; /* can't signal the kernel null process */
     if (mpid == -1) {
         *ERRNO = ESRCH;
