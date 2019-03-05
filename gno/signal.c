@@ -548,7 +548,7 @@ int KERNwait(int *ERRNO, union wait *stat) {
 longword KERNalarm(int *ERRNO, longword seconds) {
     longword old;
 
-    asm { php sei}
+    asm { php sei }
     /* $$$ old = kp->procTable[Kgetpid()].alarmCount; */
     old = PROC->alarmCount;
     /* $$$ kp->procTable[Kgetpid()].alarmCount = seconds * 10; */
@@ -559,7 +559,7 @@ longword KERNalarm(int *ERRNO, longword seconds) {
 
 longword KERNalarm10(int *ERRNO, longword seconds10) {
     longword old;
-    asm { php sei}
+    asm { php sei }
     /* $$$ old = kp->procTable[Kgetpid()].alarmCount; */
     old = PROC->alarmCount;
     /* $$$ kp->procTable[Kgetpid()].alarmCount = seconds * 10; */
@@ -735,8 +735,8 @@ longword Ksigsetmask(int *ERRNO, longword mask) {
     /* $$$ siginf = kp->procTable[Kgetpid()].siginfo; */
     siginf = PROC->siginfo;
     oldmask = siginf->signalmask;
-    mask &=
-        0xFFFAFEFFl; /* don't allow blocking of SIGKILL, SIGSTOP, or SIGCONT */
+    /* don't allow blocking of SIGKILL, SIGSTOP, or SIGCONT */
+    mask &= 0xFFFAFEFFl;
     ready = siginf->sigpending & ~mask;
     if (ready) {
         for (i = 1; i < 32; i++)
