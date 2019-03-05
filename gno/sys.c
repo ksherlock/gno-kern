@@ -1107,25 +1107,28 @@ int KERNsettpgrp(int *ERRNO, int fdtty) {
     }
     devNum = tty->refNum - 1;
     p = ttys[devNum].pgrp;
-    if (kp->gsosDebug & 16)
-        fprintf(stderr, "settpgrp pid: %d, oldpgrp: %d, ", PROC->flpid,
-                PROC->pgrp);
+
     /* $$$   kp->procTable[pid].flpid,
        kp->procTable[pid].pgrp); */
 
     disableps();
     /* $$$   if (kp->procTable[pid].pgrp != p) */
-    if (PROC->pgrp != p) {
-        if (p != 0)
+    pp = PROC->pgrp;
+    if (pp != p) {
+        if (p)
             pgrpInfo[p - 2].pgrpref++;
         /* $$$       if ((pp = kp->procTable[pid].pgrp) != 0) */
-        if ((pp = PROC->pgrp) != 0)
+        if (pp)
             pgrpInfo[pp - 2].pgrpref--;
     }
-    if (kp->gsosDebug & 16)
-        fprintf(stderr, "newpgrp: %d\n", p);
+
     /* $$$ kp->procTable[pid].pgrp = p; */
     PROC->pgrp = p;
+
+    if (kp->gsosDebug & 16)
+        fprintf(stderr, "settpgrp pid: %d, oldpgrp: %d, newpgrp: %d\n",
+                PROC->flpid, pp, p);
+
     enableps();
 }
 
