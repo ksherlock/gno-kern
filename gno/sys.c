@@ -805,8 +805,23 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
         case volNotFound:
         case pathNotFound:
         case fileNotFound:
+        case idPathnameErr:
             *ERRNO = ENOENT;
             break;
+        case idNotFound:
+        case idNotLoadFile:
+        case idFilVersErr:
+        case idSequenceErr:
+        case idBadRecordErr:
+        case idForeignSegErr:
+        /*case idUserIDErr:*/
+            *ERRNO = ENOEXEC;
+            break;
+#ifdef ETXTBSY
+        case idBusyErr:
+            *ERRNO = ETXTBSY;
+            break;
+#endif
         default:
             *ERRNO = EIO;
             break;
