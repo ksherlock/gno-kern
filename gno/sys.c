@@ -1295,6 +1295,7 @@ int KERNdup(int *ERRNO, int filedes) {
     IncRefnum(newFD->refType, newFD->refNum);
     if (newFD->refType == rtPIPE)
         incPipe(newFD->refFlags, newFD->refNum);
+    newFD->refFlags &= ~rfCLOSEEXEC;
     ft->fdCount++; /* we created a new one... */
     enableps();
     return nfd;
@@ -1335,6 +1336,7 @@ int KERNdup2(int *ERRNO, int filedes2, int filedes) {
     IncRefnum(newFD->refType, newFD->refNum);
     if (newFD->refType == rtPIPE)
         incPipe(newFD->refFlags, newFD->refNum);
+    newFD->refFlags &= ~rfCLOSEEXEC;
     ft->fdCount++; /* we created a new one... */
     enableps();
     return 0;
