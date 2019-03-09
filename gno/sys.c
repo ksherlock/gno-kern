@@ -744,6 +744,8 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     FileInfoRecGS fi;
     int ssf = 0, restart, force_norest = 0;
     word oldUserID, oldFlags, newStack;
+    fdtablePtr ft;
+
     extern ctxt ctxtstuff;
     extern GSString255Ptr __C2GSMALLOC(char *);
     extern void endproc2(void);
@@ -938,6 +940,21 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     for (i = 0; i < 32; i++) {
         if (p->siginfo->v_signal[i] != SIG_IGN)
             p->siginfo->v_signal[i] = SIG_DFL;
+    }
+
+    /* close all close-on-exec files */
+    ft = p->openFiles;
+    j = ft->fdCount;
+    for (i = 0; j ; ++i) {
+        fdentryPtr *f = ft->fds[i];
+        if (!f->refNum) continue;
+        if (f->refNum & rfCLOSEEXEC) {
+            Word ClosePB[2];
+            ClosePB[0] = 1;
+            ClosePB[1] = i;
+            CloseGS(ClosePB);
+        }
+        --j;
     }
 
     SET_STOP_FLAG(&ssf);
