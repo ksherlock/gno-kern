@@ -16,8 +16,8 @@
 #include "proc.h"
 
 struct kvmt {
-    int procIndex;     /* don't futz with this */
-    int pid;           /* you can use this to determine pid */
+    int procIndex; /* don't futz with this */
+    int pid;       /* you can use this to determine pid */
     struct pentry kvm_pent;
 };
 typedef struct kvmt kvmt;
@@ -29,4 +29,3 @@ struct pentry *kvmnextproc(kvmt *kd);
 int kvmsetproc(kvmt *kd);
 
 #endif /* __KVM_H__ */
-

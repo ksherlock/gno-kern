@@ -9,11 +9,11 @@ int isbadpid( int pid );
 #define Kgetpid() kp->truepid
 
 typedef struct pgrp {
-   word pgrpref; /* number of references to this pgrp - tty and process */
+    word pgrpref; /* number of references to this pgrp - tty and process */
 } pgrp;
 
 fdentryPtr allocFD(int *fdn);
-void copygsstr(void *,void*);
+void copygsstr(void *, void *);
 void nfree(void *);
 
 #define PROC procPtr

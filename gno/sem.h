@@ -3,18 +3,18 @@
 /* sem.h - semaphore definitions */
 
 #if NSEM
-#define SFREE		1	/* free semaphore */
-#define SUSED		2	/* semaphore in use */
+#define SFREE 1 /* free semaphore */
+#define SUSED 2 /* semaphore in use */
 
-struct sentry {			/* semaphore table entry */
-	char sstate;		/* SFREE or SUSED */
-	short semcnt;		/* semaphore count, (i.e. value) */
-        unsigned squeue;	/* process queue id */
+struct sentry {      /* semaphore table entry */
+    char sstate;     /* SFREE or SUSED */
+    short semcnt;    /* semaphore count, (i.e. value) */
+    unsigned squeue; /* process queue id */
 };
 extern struct sentry *_semaph;
 /*extern struct sentry _semaph[];*/
 
-#define isbadsem(s)	(s<0 || s>=NSEM)
+#define isbadsem(s) (s < 0 || s >= NSEM)
 
 void semINTR(int sem, int mpid);
 #endif
