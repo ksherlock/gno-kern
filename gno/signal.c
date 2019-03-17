@@ -471,7 +471,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
        tosig->irq_B = tosig->irq_B1 =
            tosig->irq_K = (sig->v_signal[signum] >> 16);
 #else
-        tosig->irq_K = (sig->v_signal[signum] >> 16);
+        tosig->irq_K = ((unsigned long)sig->v_signal[signum]) >> 16;
         tosig->irq_B1 = tosig->irq_K;
         tosig->irq_B = tosig->irq_B1;
 #endif

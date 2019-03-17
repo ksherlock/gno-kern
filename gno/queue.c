@@ -98,7 +98,7 @@ int _getfirst(int qnum)
     mptr->p_link = NULL;
     mptr->p_rlink = NULL;
 
-    return (mptr - kp);
+    return (mptr - kp->procTable); /* TODO - verify this is correct (was kp) */
 }
 
 /* we don't use _getlast anywhere */
