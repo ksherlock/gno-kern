@@ -1027,10 +1027,11 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
 
 /* open the kernel to access the process structures */
 
-kvmt *KERNkvm_open(int *ERRNO) {
-    kvmt *newk;
+struct kvmt *KERNkvm_open(int *ERRNO) {
+    int KERNkvmsetproc(int *ERRNO, struct kvmt *kd);
+    struct kvmt *newk;
 
-    newk = (kvmt *)kmalloc(sizeof(kvmt));
+    newk = (struct kvmt *)kmalloc(sizeof(kvmt));
     if (newk == NULL) {
         *ERRNO = ENOMEM;
         return NULL;
@@ -1039,13 +1040,13 @@ kvmt *KERNkvm_open(int *ERRNO) {
     return newk;
 }
 
-SYSCALL KERNkvm_close(int *ERRNO, kvmt *k) {
+SYSCALL KERNkvm_close(int *ERRNO, struct kvmt *k) {
     if (kfree(k))
         return SYSERR;
     return (OK);
 }
 
-struct pentry *KERNkvmgetproc(int *ERRNO, int pid, kvmt *kd) {
+struct pentry *KERNkvmgetproc(int *ERRNO, int pid, struct kvmt *kd) {
     int mpid;
     mpid = mapPID(pid);
     if (mpid == -1) {
@@ -1058,7 +1059,7 @@ struct pentry *KERNkvmgetproc(int *ERRNO, int pid, kvmt *kd) {
     return &(kd->kvm_pent);
 }
 
-struct pentry *KERNkvmnextproc(int *ERRNO, kvmt *kd) {
+struct pentry *KERNkvmnextproc(int *ERRNO, struct kvmt *kd) {
     int i;
     int mpid;
 
@@ -1078,7 +1079,7 @@ struct pentry *KERNkvmnextproc(int *ERRNO, kvmt *kd) {
         return NULL;
 }
 
-int KERNkvmsetproc(int *ERRNO, kvmt *kd) {
+int KERNkvmsetproc(int *ERRNO, struct kvmt *kd) {
     int i;
 
     for (i = 0; i < NPROC; i++)

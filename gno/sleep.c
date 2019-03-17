@@ -24,7 +24,9 @@ extern void sleepbusy(void);
 #include "sys.h"
 extern kernelStructPtr kp;
 
-void dosleep(int pid) { kp->procTable[pid].processState = procSLEEP; }
+void dosleep(int pid) {
+    kp->procTable[pid].processState = procSLEEP;
+}
 
 static void ready(int pid, int resch) {
     kp->procTable[pid].processState = procREADY;
@@ -57,7 +59,7 @@ static unsigned hash_vector(unsigned long vec) {
     return (unsigned)(vec & 0x3F);
 }
 
-#define BUSY_FLAG ((byte *)0xE100FFl)
+#define BUSY_FLAG ((volatile byte *)0xE100FFl)
 
 /* no longer used; this code is now in assembly language */
 #if 0
