@@ -15,7 +15,8 @@ struct ptnode *ptfree; /* list of free queue nodes */
 struct pt ports[NPORTS];
 int ptnextp;
 
-extern void PANIC(char *s);
+extern SYSCALL commonSwait(int *ERRNO, int sem, int blockas, int waitdone);
+
 
 #ifdef KERNEL
 segment "KERN2     ";
@@ -202,7 +203,7 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
  *	_ptclear - used by pdelete and preset to clear a port
  */
 
-_ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
+void _ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
     struct ptnode *p;
 
     /* put port in limbo until done freeing processes */

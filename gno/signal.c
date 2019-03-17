@@ -49,8 +49,10 @@ segment "KERN2     ";
 extern kernelStructPtr kp;
 extern void selwakeup(int col_flag, int pid);
 extern void selwait(void);
+extern void k_remove(unsigned long vec, int pid, int readyq);
 
-enqueueWait(int targetpid, int pid, union wait status) {
+
+void enqueueWait(int targetpid, int pid, union wait status) {
     chldInfoPtr walk;
     chldInfoPtr nwait;
 
@@ -491,7 +493,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     return 0;
 }
 
-void *KERNsignal(int *ERRNO, void (*func)(), int sig) {
+void *KERNsignal(int *ERRNO, void (*func)(void), int sig) {
     return Ksignal(ERRNO, func, sig);
 }
 
@@ -693,8 +695,8 @@ void cSignalHook(int signum) {
 
 #pragma databank 0
 
-void *Ksignal(int *ERRNO, void (*func)(), int sig) {
-    void (*old)();
+void *Ksignal(int *ERRNO, void (*func)(void), int sig) {
+    void (*old)(void);
     struct sigrec *siginf;
 
     if (kp->gsosDebug & 16)

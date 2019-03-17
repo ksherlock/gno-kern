@@ -47,7 +47,7 @@ segment "KERN3     ";
 extern void selwakeup(int col_flag, int pid);
 
 int (*pr_usrreq)(int socknum, int req, void *m, size_t *m_len,
-                 struct sockaddr *addr, int *addrlen, void *rights) = NULL;
+                 /*struct sockaddr **/ void *addr, int *addrlen, void *rights) = NULL;
 
 #pragma databank 1
 int SOCKioctl(void *dataptr, longword tioc, int sock) {

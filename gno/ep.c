@@ -16,6 +16,8 @@ segment "KERN2     ";
 #include "sys.h"
 #include <gsos.h>
 
+extern void PANIC(const char *str);
+
 unsigned short err;
 extern kernelStructPtr kp;
 typedef GSString255Ptr Gstr;

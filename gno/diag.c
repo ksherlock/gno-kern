@@ -60,7 +60,7 @@ void PRINTBRK(word stack, struct intState *p) {
     printf("proc: PC:%02X%04X P:%04X\n", pr->irq_K, pr->irq_PC, pr->irq_P);
 }
 
-void PANIC(char *str) {
+void PANIC(const char *str) {
     word stack;
 
     disableps(); /* shut down context switching */

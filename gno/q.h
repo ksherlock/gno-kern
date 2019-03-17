@@ -39,4 +39,12 @@ extern struct qstruct *q_free;
 
 #define nonempty(q) (nq[(q)].head != NULL)
 
+void initQ(void);
+int Qalloc(void);
+void Qdispose(int qnum);
+
+int _enqueue(int item, int qnum);
+int _getfirst(int qnum);
+int _dequeueitem(int item, int qnum);
+
 #endif

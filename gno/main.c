@@ -25,11 +25,20 @@ segment "KERN2     ";
 #include <sys/ioctl.h>
 #include <sys/ports.h>
 #include <texttool.h>
+extern void _seminit(void);
+extern void patchTools(void);
+extern void unpatchTools(void);
+extern void InitKernel(void);
+extern void DeInitKern(void);
+
+extern int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
+               word *argv, int *ERRNO);
+
 
 #ifndef udispatch
 #define udispatch 0xE10008
 #endif
-extern pascal int kernStatus() inline(0x0603, udispatch);
+extern pascal int kernStatus(void) inline(0x0603, udispatch);
 
 struct pentry *procPtr;
 

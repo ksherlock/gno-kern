@@ -88,6 +88,8 @@ int _mapErr(int err) {
     return ret;
 }
 
+extern int findDevice(GSString255Ptr);
+
 #pragma databank 1
 int statCommon(const char *filename, struct stat *s_buf) {
     FileInfoRecGS fi;

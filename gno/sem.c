@@ -31,7 +31,7 @@ static int nextsem = NSEM - 1;
 extern kernelStructPtr kp;
 extern void sleepbusy(void);
 
-static int newsem() {
+static int newsem(void) {
     int sem;
     int i;
 
@@ -49,7 +49,7 @@ static int newsem() {
 }
 
 /* initialize semaphores */
-void _seminit() {
+void _seminit(void) {
     int i;
     struct sentry *sptr;
 

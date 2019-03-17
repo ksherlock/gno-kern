@@ -375,7 +375,7 @@ pascal int KERNSetGNOQuitRec(word pCount, GSString255Ptr pathname, word flags,
     quitParms.flags = flags;
 }
 
-int KERNgetpid()
+int KERNgetpid(void)
 /* get the process id of currently executing process */
 {
     /*$$$ return( kp->procTable[kp->truepid].flpid ); */
@@ -542,7 +542,7 @@ char *a_strncpy_max(char *s, word max_len) {
     return x;
 }
 
-int commonFork(void (*funcptr)(), word stackSize, int prio, char *name,
+int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
                word *argv, int *ERRNO) {
     word dPageAddr, buffSize, nargs;
     int newID, newPID, parentPID;
@@ -702,7 +702,7 @@ int KERNfork(int *ERRNO, void *subr) {
     return commonFork((void *)subr, 1024, 0, NULL, &nargs, ERRNO);
 }
 
-pascal int KERNfork2(void (*funcptr)(), word stackSize, int prio, char *name,
+pascal int KERNfork2(void (*funcptr)(void), word stackSize, int prio, char *name,
                      word *argv, int *ERRNO) {
     return commonFork(funcptr, stackSize, prio, name, argv, ERRNO);
 }
@@ -1249,6 +1249,7 @@ int KERNpipe(int *ERRNO, int filedes[2])
     fdtablePtr ft;
     int pipen;
     extern int newPipe(void);
+    extern void disposePipe(int);
 
     if (kp->gsosDebug & 16)
         printf("pipe(%06lX)\n", filedes);
