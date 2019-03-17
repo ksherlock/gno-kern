@@ -3,12 +3,13 @@
 #pragma optimize 79
 
 #ifdef KERNEL
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
+#include <stdlib.h>
 #include "conf.h"
 #include "kernel.h"
 #include "proc.h"
 #include "q.h"
 #include "sys.h"
+#include "gno.h"
 
 extern kernelStructPtr kp;
 #else

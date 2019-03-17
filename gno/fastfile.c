@@ -11,18 +11,21 @@
 */
 #pragma optimize 72
 
-#include "/lang/orca/libraries/orcacdefs/stddef.h"
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
-#include "proc.h"
-#include "sys.h"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <ctype.h>
 #include <gsos.h>
 #include <memory.h>
 #include <misctool.h>
 #include <orca.h>
 #include <shell.h>
+
+#include "proc.h"
+#include "sys.h"
+
 
 typedef struct {
     int action;

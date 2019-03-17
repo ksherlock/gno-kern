@@ -1,6 +1,7 @@
 /*	$Id: sys.c,v 1.1 1998/02/02 08:19:05 taubert Exp $ */
 
 #pragma optimize 79
+
 segment "KERN2     ";
 
 /*
@@ -13,23 +14,27 @@ segment "KERN2     ";
        Jawaid Bazyar and Derek Taubert
 */
 
-#include "sys.h"
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
-#include "conf.h"
-#include "gno.h"
-#include "kernel.h"
-#include "kvm.h"
-#include "proc.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <gsos.h>
 #include <loader.h>
 #include <memory.h>
 #include <misctool.h>
 #include <shell.h>
-#include <sys/errno.h>
-#include <sys/times.h>
 #include <texttool.h>
+
+#include "include/errno.h"
+#include "include/times.h"
+
+#include "sys.h"
+#include "conf.h"
+#include "gno.h"
+#include "kernel.h"
+#include "kvm.h"
+#include "proc.h"
+
 
 extern kernelStructPtr kp;
 

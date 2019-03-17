@@ -5,26 +5,34 @@ segment "KERN2     ";
 #pragma stacksize 1024
 #pragma optimize 79
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
-#include "gno.h"
-#include "proc.h"
-#include "sem.h"
-#include "sys.h"
-#include "tty.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <event.h>
 #include <gsos.h>
 #include <loader.h>
 #include <locator.h>
 #include <memory.h>
-#include <orca.h>
 #include <shell.h>
+#include <texttool.h>
+
+
+#include "gno.h"
+#include "proc.h"
+#include "sem.h"
+#include "sys.h"
+#include "tty.h"
+#include "include/errno.h"
+#include "include/ports.h"
+
+/*
 #include <signal.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/ports.h>
-#include <texttool.h>
+*/
+
 extern void _seminit(void);
 extern void patchTools(void);
 extern void unpatchTools(void);

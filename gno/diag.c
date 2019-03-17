@@ -3,9 +3,11 @@
 /* kernel diagnostics and error routines */
 #pragma optimize 79
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
+#include <stdio.h>
 #include "proc.h"
 #include "sys.h"
+#include "gno.h"
+#include "kernel.h"
 
 struct intState {
     word irq_A;

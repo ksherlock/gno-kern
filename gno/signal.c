@@ -29,22 +29,27 @@
   in emulation mode, which should by all accounts be mutexed.
 */
 #pragma optimize 79
+
 segment "KERN2     ";
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <gsos.h>
+#include <loader.h>
+#include <memory.h>
+#include <misctool.h>
+
 #include "conf.h"
 #include "gno.h"
 #include "kernel.h"
 #include "proc.h"
 #include "sys.h"
-#include <gsos.h>
-#include <loader.h>
-#include <memory.h>
-#include <misctool.h>
-#include <sys/errno.h>
-#include <sys/wait.h>
+#include "sem.h"
+
+#include "include/errno.h"
+#include "include/signal.h"
 
 extern kernelStructPtr kp;
 extern void selwakeup(int col_flag, int pid);

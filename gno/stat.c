@@ -18,17 +18,20 @@
 segment "KERN2     ";
 #pragma optimize 79
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "kernel.h"
-#include "proc.h"
-#include "sys.h"
+
 #include <gsos.h>
 #include <misctool.h>
 #include <shell.h>
-#include <sys/errno.h>
-#include <sys/stat.h>
+
+#include "proc.h"
+#include "sys.h"
+
+#include "include/errno.h"
+#include "include/stat.h"
 
 extern kernelStructPtr kp;
 int inoPool = 1;

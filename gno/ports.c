@@ -1,13 +1,14 @@
 /*	$Id: ports.c,v 1.1 1998/02/02 08:18:41 taubert Exp $ */
 
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "conf.h"
 #include "gno.h"
 #include "kernel.h"
 #include "proc.h"
-#include <sys/errno.h>
-#include <sys/ports.h>
+#include "include/errno.h"
+#include "include/ports.h"
 
 #pragma optimize 79
 

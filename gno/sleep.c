@@ -18,7 +18,7 @@ extern void sleepbusy(void);
 #pragma optimize 79
 
 /*segment "KERN2     ";*/
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
+#include <stdio.h>
 #include "kernel.h"
 #include "proc.h"
 #include "sys.h"
