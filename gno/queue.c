@@ -3,12 +3,13 @@
 #pragma optimize 79
 
 #ifdef KERNEL
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
+#include <stdlib.h>
 #include "conf.h"
 #include "kernel.h"
 #include "proc.h"
 #include "q.h"
 #include "sys.h"
+#include "gno.h"
 
 extern kernelStructPtr kp;
 #else
@@ -97,7 +98,7 @@ int _getfirst(int qnum)
     mptr->p_link = NULL;
     mptr->p_rlink = NULL;
 
-    return (mptr - kp);
+    return (mptr - kp->procTable); /* TODO - verify this is correct (was kp) */
 }
 
 /* we don't use _getlast anywhere */

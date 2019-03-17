@@ -1,13 +1,14 @@
 /*	$Id: ports.c,v 1.1 1998/02/02 08:18:41 taubert Exp $ */
 
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "conf.h"
 #include "gno.h"
 #include "kernel.h"
 #include "proc.h"
-#include <sys/errno.h>
-#include <sys/ports.h>
+#include "include/errno.h"
+#include "include/ports.h"
 
 #pragma optimize 79
 
@@ -15,7 +16,8 @@ struct ptnode *ptfree; /* list of free queue nodes */
 struct pt ports[NPORTS];
 int ptnextp;
 
-extern void PANIC(char *s);
+extern SYSCALL commonSwait(int *ERRNO, int sem, int blockas, int waitdone);
+
 
 #ifdef KERNEL
 segment "KERN2     ";
@@ -202,7 +204,7 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
  *	_ptclear - used by pdelete and preset to clear a port
  */
 
-_ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
+void _ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
     struct ptnode *p;
 
     /* put port in limbo until done freeing processes */

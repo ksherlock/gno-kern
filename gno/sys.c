@@ -1,6 +1,7 @@
 /*	$Id: sys.c,v 1.1 1998/02/02 08:19:05 taubert Exp $ */
 
 #pragma optimize 79
+
 segment "KERN2     ";
 
 /*
@@ -13,23 +14,27 @@ segment "KERN2     ";
        Jawaid Bazyar and Derek Taubert
 */
 
-#include "sys.h"
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
-#include "conf.h"
-#include "gno.h"
-#include "kernel.h"
-#include "kvm.h"
-#include "proc.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <gsos.h>
 #include <loader.h>
 #include <memory.h>
 #include <misctool.h>
 #include <shell.h>
-#include <sys/errno.h>
-#include <sys/times.h>
 #include <texttool.h>
+
+#include "include/errno.h"
+#include "include/times.h"
+
+#include "sys.h"
+#include "conf.h"
+#include "gno.h"
+#include "kernel.h"
+#include "kvm.h"
+#include "proc.h"
+
 
 extern kernelStructPtr kp;
 
@@ -128,8 +133,8 @@ void *kmalloc(size_t size) {
     p_uid = PROC->userID;
     h = NewHandle(size, p_uid, 0xC008, NULL);
 
-    if (toolerror()) {
-        fprintf(stderr, "kmalloc:%04X\n", toolerror());
+    if (_toolErr) {
+        fprintf(stderr, "kmalloc:%04X\n", _toolErr);
         return NULL;
     }
     x = *h;
@@ -142,8 +147,8 @@ void *pmalloc(size_t size, word p_uid) {
 
     h = NewHandle(size, p_uid, 0xC008, NULL);
 
-    if (toolerror()) {
-        fprintf(stderr, "pmalloc:%04X\n", toolerror());
+    if (_toolErr) {
+        fprintf(stderr, "pmalloc:%04X\n", _toolErr);
         return NULL;
     }
     x = *h;
@@ -375,7 +380,7 @@ pascal int KERNSetGNOQuitRec(word pCount, GSString255Ptr pathname, word flags,
     quitParms.flags = flags;
 }
 
-int KERNgetpid()
+int KERNgetpid(void)
 /* get the process id of currently executing process */
 {
     /*$$$ return( kp->procTable[kp->truepid].flpid ); */
@@ -542,7 +547,7 @@ char *a_strncpy_max(char *s, word max_len) {
     return x;
 }
 
-int commonFork(void (*funcptr)(), word stackSize, int prio, char *name,
+int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
                word *argv, int *ERRNO) {
     word dPageAddr, buffSize, nargs;
     int newID, newPID, parentPID;
@@ -561,11 +566,11 @@ int commonFork(void (*funcptr)(), word stackSize, int prio, char *name,
 
     /*   printf("address = %08lX\n",subr); */
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "fork(%06lX)\n", funcptr);
+        fprintf(stderr, "fork(%06lX)\n", (unsigned long)funcptr);
     newID = GetNewID(0x1000);
 
     fstack = NewHandle((long)stackSize, newID | 0x0100, 0xC105, NULL);
-    if (toolerror()) {
+    if (_toolErr) {
         *ERRNO = ENOMEM;
         return -1;
     }
@@ -702,7 +707,7 @@ int KERNfork(int *ERRNO, void *subr) {
     return commonFork((void *)subr, 1024, 0, NULL, &nargs, ERRNO);
 }
 
-pascal int KERNfork2(void (*funcptr)(), word stackSize, int prio, char *name,
+pascal int KERNfork2(void (*funcptr)(void), word stackSize, int prio, char *name,
                      word *argv, int *ERRNO) {
     return commonFork(funcptr, stackSize, prio, name, argv, ERRNO);
 }
@@ -777,7 +782,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
 
     restart = 1;
     newID = GetUserID2((Pointer)&resBuf->bufString);
-    if (toolerror() == 0x1101) {
+    if (_toolErr == 0x1101) {
         /* allocate a new UserID for the program */
         newID = GetNewID(0x1000);
         restart = 0;
@@ -800,7 +805,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     } else {
         il_rec = InitialLoad2(newID, (Pointer)&resBuf->bufString, 1, 1);
     }
-    if ((e = toolerror())) {
+    if ((e = _toolErr)) {
         switch (e) {
         case volNotFound:
         case pathNotFound:
@@ -961,7 +966,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     ft = p->openFiles;
     j = ft->fdCount;
     for (i = 0; j ; ++i) {
-        fdentryPtr *f = ft->fds[i];
+        fdentryPtr f = &(ft->fds[i]);
         if (!f->refNum) continue;
         if (f->refNum & rfCLOSEEXEC) {
             Word ClosePB[2];
@@ -1022,10 +1027,11 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
 
 /* open the kernel to access the process structures */
 
-kvmt *KERNkvm_open(int *ERRNO) {
-    kvmt *newk;
+struct kvmt *KERNkvm_open(int *ERRNO) {
+    int KERNkvmsetproc(int *ERRNO, struct kvmt *kd);
+    struct kvmt *newk;
 
-    newk = (kvmt *)kmalloc(sizeof(kvmt));
+    newk = (struct kvmt *)kmalloc(sizeof(kvmt));
     if (newk == NULL) {
         *ERRNO = ENOMEM;
         return NULL;
@@ -1034,13 +1040,13 @@ kvmt *KERNkvm_open(int *ERRNO) {
     return newk;
 }
 
-SYSCALL KERNkvm_close(int *ERRNO, kvmt *k) {
+SYSCALL KERNkvm_close(int *ERRNO, struct kvmt *k) {
     if (kfree(k))
         return SYSERR;
     return (OK);
 }
 
-struct pentry *KERNkvmgetproc(int *ERRNO, int pid, kvmt *kd) {
+struct pentry *KERNkvmgetproc(int *ERRNO, int pid, struct kvmt *kd) {
     int mpid;
     mpid = mapPID(pid);
     if (mpid == -1) {
@@ -1053,7 +1059,7 @@ struct pentry *KERNkvmgetproc(int *ERRNO, int pid, kvmt *kd) {
     return &(kd->kvm_pent);
 }
 
-struct pentry *KERNkvmnextproc(int *ERRNO, kvmt *kd) {
+struct pentry *KERNkvmnextproc(int *ERRNO, struct kvmt *kd) {
     int i;
     int mpid;
 
@@ -1073,7 +1079,7 @@ struct pentry *KERNkvmnextproc(int *ERRNO, kvmt *kd) {
         return NULL;
 }
 
-int KERNkvmsetproc(int *ERRNO, kvmt *kd) {
+int KERNkvmsetproc(int *ERRNO, struct kvmt *kd) {
     int i;
 
     for (i = 0; i < NPROC; i++)
@@ -1249,9 +1255,10 @@ int KERNpipe(int *ERRNO, int filedes[2])
     fdtablePtr ft;
     int pipen;
     extern int newPipe(void);
+    extern void disposePipe(int);
 
     if (kp->gsosDebug & 16)
-        printf("pipe(%06lX)\n", filedes);
+        printf("pipe(%06lX)\n", (unsigned long)filedes);
     /* $$$  ft = kp->procTable[Kgetpid()].openFiles; */
     pipen = newPipe();
     pread = allocFD(&fdread);

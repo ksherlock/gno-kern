@@ -24,30 +24,34 @@
  * KERNsetsockopt(int s, int level, int optname, void *optval, int optlen, int *ERRNO)
  */
 
+#include <stdlib.h>
+#include <string.h>
+
+#include <locator.h>
+#include <memory.h>
+
+
+#include "include/errno.h"
+#include "include/socket.h"
+
+
 #include "net.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
 #include "gno.h"
 #include "kernel.h"
 #include "proc.h"
 #include "sys.h"
-#include <locator.h>
-#include <memory.h>
-#include <orca.h>
-#include <sys/errno.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 
 /*#define DEBUG
 #include <debug.h>*/
 
 #pragma optimize 79
+
 segment "KERN3     ";
 
 extern void selwakeup(int col_flag, int pid);
 
 int (*pr_usrreq)(int socknum, int req, void *m, size_t *m_len,
-                 struct sockaddr *addr, int *addrlen, void *rights) = NULL;
+                 /*struct sockaddr **/ void *addr, int *addrlen, void *rights) = NULL;
 
 #pragma databank 1
 int SOCKioctl(void *dataptr, longword tioc, int sock) {

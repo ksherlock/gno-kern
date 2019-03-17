@@ -6,15 +6,18 @@
           the prefixes directly from the process entry
 */
 #pragma optimize 79
+
 segment "KERN2     ";
 
-#include "/lang/orca/libraries/orcacdefs/ctype.h"
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "proc.h"
 #include "sys.h"
 #include <gsos.h>
+
+extern void PANIC(const char *str);
 
 unsigned short err;
 extern kernelStructPtr kp;

@@ -5,31 +5,48 @@ segment "KERN2     ";
 #pragma stacksize 1024
 #pragma optimize 79
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
-#include "gno.h"
-#include "proc.h"
-#include "sem.h"
-#include "sys.h"
-#include "tty.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <event.h>
 #include <gsos.h>
 #include <loader.h>
 #include <locator.h>
 #include <memory.h>
-#include <orca.h>
 #include <shell.h>
+#include <texttool.h>
+
+
+#include "gno.h"
+#include "proc.h"
+#include "sem.h"
+#include "sys.h"
+#include "tty.h"
+#include "include/errno.h"
+#include "include/ports.h"
+
+/*
 #include <signal.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/ports.h>
-#include <texttool.h>
+*/
+
+extern void _seminit(void);
+extern void patchTools(void);
+extern void unpatchTools(void);
+extern void InitKernel(void);
+extern void DeInitKern(void);
+
+extern int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
+               word *argv, int *ERRNO);
+
 
 #ifndef udispatch
 #define udispatch 0xE10008
 #endif
-extern pascal int kernStatus() inline(0x0603, udispatch);
+extern pascal int kernStatus(void) inline(0x0603, udispatch);
 
 struct pentry *procPtr;
 
@@ -177,7 +194,7 @@ static void setuptty(void) {
         /* InitialLoad device file */
         ILuserID = (kp->userID & 0xF0FF) | (((devNum + 2) & 0xf) << 8);
         il_rec = InitialLoad2(ILuserID, (Pointer)&filename, 1, 1);
-        if ((e = toolerror())) {
+        if ((e = _toolErr)) {
             printf("Could not load driver: %s, error: %04X\n", filename.text,
                    e);
         } else {
@@ -200,8 +217,6 @@ int main(int argc, char *argv) {
     extern CKernData;
     extern TEXTTOOLSINFO;
     extern void TESTPROC(void);
-    extern void InitRefnum(void);
-    extern void AddRefnum(int, int);
     extern void init_htable(void);
     extern void initPTY(void);
     extern int pinit(int);
@@ -235,7 +250,7 @@ int main(int argc, char *argv) {
     InitTextDev(errorOutput);
 
     kernStatus();
-    if (!toolerror()) {
+    if (!_toolErr) {
         printf("GNO Kernel already active\n");
         exit(1);
     }
@@ -251,7 +266,7 @@ int main(int argc, char *argv) {
 #ifdef DEBUG_STARTUP
     printf("\nmain thinks kp is :%08lX\n", kp);
 #endif
-    kp->userID = userid();
+    kp->userID = MMStartUp();
 #ifdef DEBUG_GSOS
     kp->gsosDebug = ~0;
 #endif
@@ -444,9 +459,10 @@ endGNO:
 int kern_printf(const char *format, ...) {
     static char buffer[KP_BUFSIZ];
     va_list list;
+    int ret;
 
     va_start(list, format);
-    vsnprintf(buffer, KP_BUFSIZ, format, list);
+    ret = vsnprintf(buffer, KP_BUFSIZ, format, list);
 
     WriteCString(buffer);
     va_end(list);

@@ -22,10 +22,5 @@ struct kvmt {
 };
 typedef struct kvmt kvmt;
 
-kvmt *kvm_open(void);
-int kvm_close(kvmt *k);
-struct pentry *kvmgetproc(kvmt *kd, int pid);
-struct pentry *kvmnextproc(kvmt *kd);
-int kvmsetproc(kvmt *kd);
 
 #endif /* __KVM_H__ */

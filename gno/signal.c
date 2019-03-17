@@ -29,28 +29,35 @@
   in emulation mode, which should by all accounts be mutexed.
 */
 #pragma optimize 79
+
 segment "KERN2     ";
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <gsos.h>
+#include <loader.h>
+#include <memory.h>
+#include <misctool.h>
+
 #include "conf.h"
 #include "gno.h"
 #include "kernel.h"
 #include "proc.h"
 #include "sys.h"
-#include <gsos.h>
-#include <loader.h>
-#include <memory.h>
-#include <misctool.h>
-#include <sys/errno.h>
-#include <sys/wait.h>
+#include "sem.h"
+
+#include "include/errno.h"
+#include "include/signal.h"
 
 extern kernelStructPtr kp;
 extern void selwakeup(int col_flag, int pid);
 extern void selwait(void);
+extern void k_remove(unsigned long vec, int pid, int readyq);
 
-enqueueWait(int targetpid, int pid, union wait status) {
+
+void enqueueWait(int targetpid, int pid, union wait status) {
     chldInfoPtr walk;
     chldInfoPtr nwait;
 
@@ -464,7 +471,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
        tosig->irq_B = tosig->irq_B1 =
            tosig->irq_K = (sig->v_signal[signum] >> 16);
 #else
-        tosig->irq_K = (sig->v_signal[signum] >> 16);
+        tosig->irq_K = ((unsigned long)sig->v_signal[signum]) >> 16;
         tosig->irq_B1 = tosig->irq_K;
         tosig->irq_B = tosig->irq_B1;
 #endif
@@ -491,7 +498,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     return 0;
 }
 
-void *KERNsignal(int *ERRNO, void (*func)(), int sig) {
+void *KERNsignal(int *ERRNO, void (*func)(void), int sig) {
     return Ksignal(ERRNO, func, sig);
 }
 
@@ -693,8 +700,8 @@ void cSignalHook(int signum) {
 
 #pragma databank 0
 
-void *Ksignal(int *ERRNO, void (*func)(), int sig) {
-    void (*old)();
+void *Ksignal(int *ERRNO, void (*func)(void), int sig) {
+    void (*old)(void);
     struct sigrec *siginf;
 
     if (kp->gsosDebug & 16)

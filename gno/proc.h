@@ -8,9 +8,9 @@
 #ifndef PROC_KERN
 #define PROC_KERN
 
-#include <sys/signal.h>
-#include <sys/types.h>
 #include <types.h>
+
+#include "include/signal.h"
 
 /* the various process states are defined here */
 
@@ -67,6 +67,9 @@ typedef struct quitStack {
     char data[1];
 } quitStack;
 
+
+
+
 /* these flags are set by execve() and fork() during process creation. */
 
 #define FL_RESOURCE 1    /* does the process have and use a resource fork? */
@@ -113,11 +116,7 @@ struct pentry {
     longword alarmCount;
     void *executeHook; /* for a good time call... */
     word queueLink;
-#ifdef KERNEL
     chldInfoPtr waitq; /* where waits wait to be processed */
-#else
-    void *waitq;
-#endif
     int waitdone;
     int flpid;
     quitStack *returnStack;
@@ -135,7 +134,6 @@ struct pentry {
 };
 typedef struct pentry procState, *procStatePtr;
 
-#ifdef KERNEL
 struct kernelStruct {
     procState procTable[32];
     int curProcInd;
@@ -150,5 +148,4 @@ struct kernelStruct {
 };
 typedef struct kernelStruct kernelStruct, *kernelStructPtr;
 
-#endif /* KERNEL */
 #endif /* PROC_KERN */

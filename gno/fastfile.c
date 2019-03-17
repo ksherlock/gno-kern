@@ -11,18 +11,21 @@
 */
 #pragma optimize 72
 
-#include "/lang/orca/libraries/orcacdefs/stddef.h"
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "/lang/orca/libraries/orcacdefs/string.h"
-#include "proc.h"
-#include "sys.h"
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <ctype.h>
 #include <gsos.h>
 #include <memory.h>
 #include <misctool.h>
 #include <orca.h>
 #include <shell.h>
+
+#include "proc.h"
+#include "sys.h"
+
 
 typedef struct {
     int action;
@@ -187,8 +190,8 @@ int upToDate(ffentryPtr p) {
         f.pCount = 7;
         f.pathname = p->pathnameGS;
         GetFileInfoGS(&f);
-        if (toolerror())
-            printf("GetFileInfo err %04X\n", toolerror());
+        if (_toolErr)
+            printf("GetFileInfo err %04X\n", _toolErr);
         if (memcmp(&f.modDateTime, &p->info.modDateTime, sizeof(TimeRec)))
             return 0;
         /*       memcpy(dateBuf,&f.modDateTime,sizeof(TimeRec));
@@ -229,7 +232,7 @@ handle loadFile(GSString255Ptr pathGS, ffentryPtr p) {
     fileHandle = NewHandle(op.eof, userid() | 0x0100, 0x8000, NULL);
     if (fileHandle == NULL) {
         p->hidden = 0;
-        ffErr(toolerror());
+        ffErr(_toolErr);
         return NULL;
     }
     re.pCount = 4;
@@ -358,7 +361,7 @@ int fastEntry(FastFilePB *ff, int osFlag, int pCount) {
 
         fileHandle = loadFile(pathCopy, p);
         if (fileHandle == NULL) {
-            err = toolerror();
+            err = _toolErr;
             DeleteFF(p);
         } else
             p->flags = ff->flags;
@@ -409,7 +412,7 @@ int fastEntry(FastFilePB *ff, int osFlag, int pCount) {
         fileHandle = loadFile(p->pathnameGS, p);
         if (fileHandle == NULL) {
             InFastFile = 0;
-            return toolerror();
+            return _toolErr;
         }
         ff->flags = p->flags;
         if (!osFlag)
@@ -458,8 +461,8 @@ int fastEntry(FastFilePB *ff, int osFlag, int pCount) {
         cr.pathname = p->pathnameGS;
     doCreate:
         CreateGS(&cr);
-        if (toolerror()) {
-            err = toolerror();
+        if (_toolErr) {
+            err = _toolErr;
             if (err != 0x47) {
                 DeleteFF(p);
                 break;

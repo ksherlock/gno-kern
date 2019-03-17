@@ -13,25 +13,27 @@ newsem() - allocate an unused semaphore and return its index
 */
 
 #pragma optimize 79
+
 segment "KERN3     ";
 
 #include "conf.h"
 #if NSEM
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "gno.h"
 #include "kernel.h"
 #include "proc.h"
 #include "q.h"
 #include "sem.h"
 #include "sys.h"
-#include <sys/errno.h>
+#include "include/errno.h"
 
 static int nextsem = NSEM - 1;
 extern kernelStructPtr kp;
 extern void sleepbusy(void);
 
-static int newsem() {
+static int newsem(void) {
     int sem;
     int i;
 
@@ -49,7 +51,7 @@ static int newsem() {
 }
 
 /* initialize semaphores */
-void _seminit() {
+void _seminit(void) {
     int i;
     struct sentry *sptr;
 

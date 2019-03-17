@@ -4,16 +4,18 @@ segment "KERN2     ";
 
 #pragma optimize 79
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
-#include "/lang/orca/libraries/orcacdefs/stdlib.h"
-#include "gno.h"
-#include "proc.h"
-#include "sem.h"
-#include "sys.h"
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <event.h>
 #include <gsos.h>
 #include <locator.h>
 #include <memory.h>
+
+#include "gno.h"
+#include "proc.h"
+#include "sem.h"
+#include "sys.h"
 
 struct patchEntry {
     word toolNum;

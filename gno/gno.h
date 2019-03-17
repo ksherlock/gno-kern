@@ -13,56 +13,10 @@
 #ifndef udispatch
 #define udispatch  0xE10008
 #endif
-extern pascal int   kernVersion() inline(0x0403, udispatch);
-extern pascal int   kernStatus() inline(0x0603, udispatch);
+extern pascal int   kernVersion(void) inline(0x0403, udispatch);
+extern pascal int   kernStatus(void) inline(0x0603, udispatch);
 
-#ifndef KERNEL
-int   getppid(void);
-int   fork(void *subr);
-int   exec(char *filename,char *cmdline);
-int   tcnewpgrp(int fdtty);
-int   settpgrp(int fdtty);
-int   tctpgrp(int fdtty, int pid);
-int   setdebug(int code);
-void *setsystemvector(void *vect);
-int   pipe(int filedes[2]);
-int   getpgrp(int pid);
-int   setpgrp(int pid,int pgrp);
-int   ioctl(int d, unsigned long request, void *argp);
-/* 'dup()' appears in fcntl.h, dup2() should too, but I'm not rewriting
-   any more O**A C header files */
-int   dup2(int filedes, int filedes2);
 
-void SetGNOQuitRec(word,void *,word);
-unsigned int sleep(unsigned int);
-
-#ifdef __stdio__
-FILE *fdopen(int,char*);
-#endif
-
-int   execve(char *filename,char *cmdline);
-int   fork2(void *subr, int stack, int prio, char *name, int nargs, ...);
-int   screate(int count);
-int   ssignal(int sem);
-int   swait(int sem);
-int   scount(int sem);
-int   sdelete(int sem);
-int   getpid(void);
-
-int   kill(int pid, int sig);
-int   wait(union wait *status);
-void  *signal(int sig, void (*func)());
-longword sigblock(longword mask);
-longword sigsetmask(longword mask);
-longword alarm(longword seconds);
-longword alarm10(longword tenths);
-int   sigpause(longword mask);
-longword procrecvclr(void);
-longword procreceive(void);
-longword procrecvtim(int timeout);
-int   procsend(int pid, unsigned long msg);
-
-#else
 int kern_printf(const char *, ...);
 
 int KERNexecve(int *ERRNO, char *cmdline, char *filename);
@@ -71,10 +25,15 @@ int KERNssignal(int *ERRNO, int sem);
 int Kscount(int *ERRNO, int sem);
 int KERNsdelete(int *ERRNO, int sem);
 int KERNkill(int *ERRNO, int signum, int pid);
-void *Ksignal(int *ERRNO, void (*func)(), int sig );
+void *Ksignal(int *ERRNO, void (*func)(int, int), int sig );
 longword Ksigblock(int *ERRNO, longword mask);
 longword Ksigsetmask(int *ERRNO, longword mask);
-int KERNkvmsetproc(int *ERRNO, struct kvmt *kd);
+
+/*
+ * These functions use the pascal/toolcall protocol,
+ * ie, return value on stack.  wrap with pha/pla
+ * so they can be used in C.
+ */
 
 #define Kexecve(__e, __p1, __p2)	\
 	{ asm { pha } KERNexecve(__e, __p1, __p2); asm { pla } }
@@ -89,4 +48,7 @@ int KERNkvmsetproc(int *ERRNO, struct kvmt *kd);
 
 extern int errno;
 
-#endif
+extern void PANIC(const char *);
+
+extern void InitRefnum(void);
+extern void AddRefnum(int, int);

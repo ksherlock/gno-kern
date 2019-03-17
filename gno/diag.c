@@ -3,9 +3,11 @@
 /* kernel diagnostics and error routines */
 #pragma optimize 79
 
-#include "/lang/orca/libraries/orcacdefs/stdio.h"
+#include <stdio.h>
 #include "proc.h"
 #include "sys.h"
+#include "gno.h"
+#include "kernel.h"
 
 struct intState {
     word irq_A;
@@ -60,7 +62,7 @@ void PRINTBRK(word stack, struct intState *p) {
     printf("proc: PC:%02X%04X P:%04X\n", pr->irq_K, pr->irq_PC, pr->irq_P);
 }
 
-void PANIC(char *str) {
+void PANIC(const char *str) {
     word stack;
 
     disableps(); /* shut down context switching */
