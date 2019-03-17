@@ -28,7 +28,12 @@ int KERNkill(int *ERRNO, int signum, int pid);
 void *Ksignal(int *ERRNO, void (*func)(int, int), int sig );
 longword Ksigblock(int *ERRNO, longword mask);
 longword Ksigsetmask(int *ERRNO, longword mask);
-int KERNkvmsetproc(int *ERRNO, struct kvmt *kd);
+
+/*
+ * These functions use the pascal/toolcall protocol,
+ * ie, return value on stack.  wrap with pha/pla
+ * so they can be used in C.
+ */
 
 #define Kexecve(__e, __p1, __p2)	\
 	{ asm { pha } KERNexecve(__e, __p1, __p2); asm { pla } }
