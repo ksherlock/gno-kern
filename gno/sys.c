@@ -966,7 +966,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     ft = p->openFiles;
     j = ft->fdCount;
     for (i = 0; j ; ++i) {
-        fdentryPtr *f = ft->fds[i];
+        fdentryPtr f = &(ft->fds[i]);
         if (!f->refNum) continue;
         if (f->refNum & rfCLOSEEXEC) {
             Word ClosePB[2];

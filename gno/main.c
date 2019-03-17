@@ -459,9 +459,10 @@ endGNO:
 int kern_printf(const char *format, ...) {
     static char buffer[KP_BUFSIZ];
     va_list list;
+    int ret;
 
     va_start(list, format);
-    vsnprintf(buffer, KP_BUFSIZ, format, list);
+    ret = vsnprintf(buffer, KP_BUFSIZ, format, list);
 
     WriteCString(buffer);
     va_end(list);
