@@ -177,7 +177,7 @@ static void setuptty(void) {
         /* InitialLoad device file */
         ILuserID = (kp->userID & 0xF0FF) | (((devNum + 2) & 0xf) << 8);
         il_rec = InitialLoad2(ILuserID, (Pointer)&filename, 1, 1);
-        if ((e = toolerror())) {
+        if ((e = _toolErr)) {
             printf("Could not load driver: %s, error: %04X\n", filename.text,
                    e);
         } else {
@@ -200,8 +200,6 @@ int main(int argc, char *argv) {
     extern CKernData;
     extern TEXTTOOLSINFO;
     extern void TESTPROC(void);
-    extern void InitRefnum(void);
-    extern void AddRefnum(int, int);
     extern void init_htable(void);
     extern void initPTY(void);
     extern int pinit(int);
@@ -235,7 +233,7 @@ int main(int argc, char *argv) {
     InitTextDev(errorOutput);
 
     kernStatus();
-    if (!toolerror()) {
+    if (!_toolErr) {
         printf("GNO Kernel already active\n");
         exit(1);
     }
@@ -251,7 +249,7 @@ int main(int argc, char *argv) {
 #ifdef DEBUG_STARTUP
     printf("\nmain thinks kp is :%08lX\n", kp);
 #endif
-    kp->userID = userid();
+    kp->userID = MMStartUp();
 #ifdef DEBUG_GSOS
     kp->gsosDebug = ~0;
 #endif

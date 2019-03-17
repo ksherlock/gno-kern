@@ -128,8 +128,8 @@ void *kmalloc(size_t size) {
     p_uid = PROC->userID;
     h = NewHandle(size, p_uid, 0xC008, NULL);
 
-    if (toolerror()) {
-        fprintf(stderr, "kmalloc:%04X\n", toolerror());
+    if (_toolErr) {
+        fprintf(stderr, "kmalloc:%04X\n", _toolErr);
         return NULL;
     }
     x = *h;
@@ -142,8 +142,8 @@ void *pmalloc(size_t size, word p_uid) {
 
     h = NewHandle(size, p_uid, 0xC008, NULL);
 
-    if (toolerror()) {
-        fprintf(stderr, "pmalloc:%04X\n", toolerror());
+    if (_toolErr) {
+        fprintf(stderr, "pmalloc:%04X\n", _toolErr);
         return NULL;
     }
     x = *h;
@@ -565,7 +565,7 @@ int commonFork(void (*funcptr)(), word stackSize, int prio, char *name,
     newID = GetNewID(0x1000);
 
     fstack = NewHandle((long)stackSize, newID | 0x0100, 0xC105, NULL);
-    if (toolerror()) {
+    if (_toolErr) {
         *ERRNO = ENOMEM;
         return -1;
     }
@@ -777,7 +777,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
 
     restart = 1;
     newID = GetUserID2((Pointer)&resBuf->bufString);
-    if (toolerror() == 0x1101) {
+    if (_toolErr == 0x1101) {
         /* allocate a new UserID for the program */
         newID = GetNewID(0x1000);
         restart = 0;
@@ -800,7 +800,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     } else {
         il_rec = InitialLoad2(newID, (Pointer)&resBuf->bufString, 1, 1);
     }
-    if ((e = toolerror())) {
+    if ((e = _toolErr)) {
         switch (e) {
         case volNotFound:
         case pathNotFound:
