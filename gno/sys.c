@@ -566,7 +566,7 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
 
     /*   printf("address = %08lX\n",subr); */
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "fork(%06lX)\n", funcptr);
+        fprintf(stderr, "fork(%06lX)\n", (unsigned long)funcptr);
     newID = GetNewID(0x1000);
 
     fstack = NewHandle((long)stackSize, newID | 0x0100, 0xC105, NULL);
@@ -1257,7 +1257,7 @@ int KERNpipe(int *ERRNO, int filedes[2])
     extern void disposePipe(int);
 
     if (kp->gsosDebug & 16)
-        printf("pipe(%06lX)\n", filedes);
+        printf("pipe(%06lX)\n", (unsigned long)filedes);
     /* $$$  ft = kp->procTable[Kgetpid()].openFiles; */
     pipen = newPipe();
     pread = allocFD(&fdread);
