@@ -3,7 +3,8 @@
 	case	on
 	mcopy	sim.mac
 
-dummysim2 start				; ends up in .root
+; ends up in .root
+dummysim2 start
 	end
 
 ************************************************************************
@@ -54,12 +55,12 @@ SIMINIT	START
 	plb
 
 	lda	#0
-	sta   IntVectPrinter	indicate that no vectors are
+	sta	IntVectPrinter	indicate that no vectors are
 	sta	IntVectPrinter+2	installed
 	sta	IntVectModem
 	sta	IntVectModem+2
-               sta	ExtVect1
-               sta	ExtVect1+2
+	sta	ExtVect1
+	sta	ExtVect1+2
 * gdr:	commented out because it seems that the ExtVect2 code was never
 *	finished.
 *	sta	ExtVect2
@@ -68,7 +69,7 @@ SIMINIT	START
 
 * Turn off interrupts while we do the dirty deed
 
-               php
+	php
 	sei
 * set the IIGS main interrupt vector to point to our version of this
 * routine.  This code only works on a ROM 01 at this point due to the
@@ -76,7 +77,7 @@ SIMINIT	START
 * We check the ROM version here and install the appropriate routine
 
 	jsr	GetROMVersion
-               cmp	#0
+	cmp	#0
 	beq	doRom0
 	cmp	#1
 	beq	doRom0
@@ -240,27 +241,27 @@ ROM01IntVect	START
 	lda	#0
 	tcd
 	short	mx
-               bcc	sw2	emulation mode?
+	bcc	sw2	emulation mode?
 	lda	4,s	yes check to see if this intr is a BRK
 	and	#$10
 	adc	#$70
-sw2       	bvc	switch1
+sw2	bvc	switch1
 * $$$ ROM DEPENDENT ENTRY POINT
 	jmp	>$FFB85F	it was a BRK, let the firmware handle it
 switch1	lda	#3
 	sta   $C039
 	lda	$C039
-               bit   $0103
-               beq	X_B83F
-               pha
-               and	#$07
-               bne	X_B826
-               lda	$C03B
-               sta	$0105
-               lda	$C03B
-               sta	$0106
-               jsl	>v_AppleTalk
-               bra	X_B836
+	bit   $0103
+	beq	X_B83F
+	pha
+	and	#$07
+	bne	X_B826
+	lda	$C03B
+	sta	$0105
+	lda	$C03B
+	sta	$0106
+	jsl	>v_AppleTalk
+	bra	X_B836
 X_B826	lda	$C03A
 	sta	$0105
 	lda	$C03A
@@ -283,12 +284,12 @@ X_B842	pha
 
 doPortPrinter	anop
 	lda	1,s
-               and	>ourSerFlag
+	and	>ourSerFlag
 	beq	notOurSerIntr1
 	bit	#%00111000
 	beq	notOurSerIntr1
-               jsl	>IntVectPrinter
-               rol	$0101
+	jsl	>IntVectPrinter
+	rol	$0101
 
 notOurSerIntr1	pla
 	lda	$0101
@@ -330,7 +331,7 @@ rtl	equ	1+misc
 	tcd
 
 	lda	reqCode
-               cmp	#$8003
+	cmp	#$8003
 	jcs	exitRequestErr
 	cmp	#$8000
 	jcc	exitRequestErr
@@ -368,7 +369,7 @@ doInstall	anop
 	php
 	sei
 * install the new vector in our interrupt handler table
-               lda	#$5C
+	lda	#$5C
 	sta	IntVectPrinter,x
 	ldy   #SIMaddress
 	lda	[dataIn],y
@@ -384,7 +385,7 @@ doInstall	anop
 	lda	[dataIn],y
 	cmp	#2
 	beq	port2
-               ldx	#%00111000
+	ldx	#%00111000
 port2	txa
 	ora	ourSerFlag
 	sta	ourSerFlag
@@ -395,13 +396,13 @@ port2	txa
 	lda	[dataIn],y
 	cmp	#SIMModemPort
 	beq	port2a
-               ldx	#%11000111
+	ldx	#%11000111
 port2a	txa
-               and   >SerFlag
-               sta   >SerFlag
+	and   >SerFlag
+	sta   >SerFlag
 
 * Restore interrupts
-               plp
+	plp
 
 okayno1	lda	#SIMNoError
 	bra	goodbye
@@ -423,25 +424,25 @@ installExt     dec	a
 	tax
 	lda	ExtVect1,x
 	cmp	ExtVect1+2,x
-               bne	intInstalled
-               php
+	bne	intInstalled
+	php
 	sei
 	lda	#$5C
 	sta	ExtVect1,x
 	ldy   #SIMaddress
 	lda	[dataIn],y
 	sta	ExtVect1+1,x
-               ldy   #SIMaddress+1
+	ldy   #SIMaddress+1
 	lda	[dataIn],y
 	sta	ExtVect1+2,x
-               plp
-               bra	okayno1
+	plp
+	bra	okayno1
 
 doRemove	anop
 * Calculate index into our handler list by quadrupling "port"
 	ldy	#SIMport
 	lda	[dataIn],y
-               jsr	ValidatePort
+	jsr	ValidatePort
 	bcs	notValidPort
 
 	cmp	#3
@@ -452,13 +453,13 @@ doRemove	anop
 	asl	a
 	tax
 * If there is no handler installed on that port, return an error
-               lda	IntVectPrinter,x
+	lda	IntVectPrinter,x
 	ora	IntVectPrinter+2,x
 	beq	noIntInstalled
 * If the handler on the port isn't the one the application claims,
 * return an error
 	lda	IntVectPrinter+1,x
-               ldy	#SIMaddress
+	ldy	#SIMaddress
 	cmp	[dataIn],y
 	bne	notSameVect
 	lda	IntVectPrinter+2,x
@@ -479,8 +480,8 @@ doRemove	anop
 	lda	[dataIn],y
 	cmp	#SIMModemPort
 	beq	port3
-               ldx	#%11000111
-port3          txa
+	ldx	#%11000111
+port3	txa
 	and	ourSerFlag
 	sta	ourSerFlag
 
@@ -497,41 +498,41 @@ notSameVect	lda	#SIMInvalidAddr
 noIntInstalled lda   #SIMNotInstalled
 goodbye2       ldy	#Gerror
 	sta	[dataOut],y
-               jmp	exitRequest
+	jmp	exitRequest
 
 removeExternal anop
-               dec   a
-               dec   a
-               dec   a
-               asl   a
-               asl   a
-               tax
+	dec   a
+	dec   a
+	dec   a
+	asl   a
+	asl   a
+	tax
 
 * if no handler is installed, signal an error
-               lda	ExtVect1,x
+	lda	ExtVect1,x
 	ora	ExtVect1+2,x
 	beq	noIntInstalled
 
 * if handler is not the same as is there, signal an error
 	lda	ExtVect1+1,x
-               ldy	#SIMaddress
+	ldy	#SIMaddress
 	cmp	[dataIn],y
 	bne	notSameVect
 	lda	ExtVect1+2,x
 	ldy	#SIMaddress+1
 	cmp	[dataIn],y
 	bne	notSameVect
-               php
+	php
 	sei
 	lda	#0
 	sta	ExtVect1,X
 	sta	ExtVect1+2,X
 	plp
-               bra	noerrgoaway
+	bra	noerrgoaway
 
 doVersion	anop
 	lda	#Version
-               ldy	#Gversion
+	ldy	#Gversion
 	sta	[dataOut],y
 	lda	#SIMNoError
 	ldy	#Gerror
@@ -562,7 +563,7 @@ exitRequest1	anop
 
 * Does not modify the port number in A
 ValidatePort	START
-               cmp	#1
+	cmp	#1
 	bcc	bad
 	cmp	#7
 	bcs	bad
@@ -573,7 +574,7 @@ bad	sec
 	END
 
 GetROMVersion	START
-               pha
+	pha
 	pha
 	pha
 	pha
@@ -645,10 +646,10 @@ DIError	anop
 NotFound	stz	ApTalkPort	neither port is in use
 	bra	Exit
 
-Exit           anop
-               lda 	ApTalkPort
-               plb		restore data bank
-               rtl		return to caller
+Exit	anop
+	lda 	ApTalkPort
+	plb		restore data bank
+	rtl		return to caller
 
 ApTalkPort	entry
 	ds	2	will be 0, 1, or 2
@@ -656,12 +657,12 @@ ApTalkPort	entry
 DInfoParms	anop
 	dc	i2'8'	pCount = 8 parameters
 DIdevNum	dc i2'1'	devNum
-               dc	a4'NameBuffer'	devName
+	dc	a4'NameBuffer'	devName
 	ds	2	characteristics
-               ds	4	totalBlocks
+	ds	4	totalBlocks
 	ds	2	slotNum
 	ds	2	unitNum
-               ds	2		version
+	ds	2		version
 DIdeviceIDNum	ds	2		deviceIDNum
 
 NameBuffer     anop

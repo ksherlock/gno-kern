@@ -2,7 +2,8 @@
 	mcopy	simlib.mac
 	copy	simequates.equ
 
-dummysim1 start				; ends up in .root
+; ends up in .root
+dummysim1 start
 	end
 
 * High-level access library for SIM tool
@@ -20,7 +21,7 @@ result	equ	0
 	sta	SIMaddress
 	lda	address+2
 	sta	SIMaddress+2
-               lda	#SIMInstallHand
+	lda	#SIMInstallHand
 	jsr	DoSIMCall
 	lda	|Gerror
 	sta	result
@@ -79,8 +80,8 @@ DoSIMCall	START
 
 	bcc	noToolErr
 	cmp	#$0120	; nobody accepted the request
-               beq	noAccept
-        	rts
+	beq	noAccept
+	rts
 
 noAccept	lda	#SIMNotFound
 	sta	|Gerror
@@ -88,7 +89,7 @@ noToolErr	rts
 	END
 
 SIMLibData	DATA
-SIMName        str	'SerialIntrMgr~Entry~'
+SIMName	str	'SerialIntrMgr~Entry~'
 pBlock	dc	i2'0'	; count field
 Gerror	dc	i2'0'	; error code
 Gversion	dc	i2'0'	; version number
