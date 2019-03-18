@@ -14,10 +14,14 @@ KERN_OBJS = main.a patch.a kern.a sys.a signal.a ctool.a sem.a \
 	inout.a console.a box.a conpatch.a
 
 CHTYP = iix chtyp
+MAKELIB = iix makelib
+
 VPATH = gno:drivers
 
+TARGETS = kern null console modem printer libsim sys/sim
+
 .PHONY: all
-all: kern null console
+all: $(TARGETS)
 
 kern: $(addprefix o/,$(KERN_OBJS)) | o
 	occ $(LDFLAGS) -o $@ $^
@@ -32,15 +36,22 @@ console: o/console.a o/inout.a o/box.a o/conpatch.a
 	$(CHTYP) -t 187 -a 32257 $@
 
 
-modem: o/port.a o/msccf.a
-	# needs libsim
-	occ $(LDFLAGS) -o $@ $^
+modem: o/port.a o/msccf.a libsim
+	occ $(LDFLAGS) -o $@ o/port.a o/msccf.a -L. -lsim
 	$(CHTYP) -t 187 -a 32257 $@
 
-printer: o/port.a o/psccf.a
-	# needs libsim
-	occ $(LDFLAGS) -o $@ $^
+printer: o/port.a o/psccf.a libsim
+	occ $(LDFLAGS) -o $@ o/port.a o/psccf.a -L. -lsim
 	$(CHTYP) -t 187 -a 32257 $@
+
+sys/sim: o/sim/sim.a | sys
+	occ $(LDFLAGS) -o $@ $^
+	$(CHTYP) -t 182 $@
+
+libsim: o/sim/simlib.a
+	$(RM) -f $@
+	$(MAKELIB) $@ $(addprefix +,$^)
+
 
 .PHONY: clean clobber
 
@@ -48,15 +59,22 @@ clean:
 	$(RM) -rf -- o
 
 clobber:
-	$(RM) -rf -- o kern null console modem printer
+	$(RM) -rf -- o $(TARGETS)
 
 .PHONY: fixtypes
 
 fixtypes:
 	$(CHTYP) -l asm gno/inc/*.inc
 	$(CHTYP) -l asm drivers/equates
+	$(CHTYP) -l asm sim/simequates.equ
 
 o :
+	mkdir $@
+
+o/sim :
+	mkdir -p $@
+
+sys :
 	mkdir $@
 
 # main doesn't need the -r/noroot flag.
@@ -66,7 +84,11 @@ o/main.a: main.c| o
 o/%.a : %.c | o
 	cd $(dir $<) && $(CC) -c $(CPPFLAGS) $(CFLAGS) -r -o ../$@ $(notdir $<)
 
-o/%.a : %.asm | o
+o/sim/%.a : sim/%.asm | o o/sim
+	cd $(dir $<) && $(CC) -c $(ASFLAGS) -o ../$@ $(notdir $<)
+	$(RM) -f o/sim/$*.root
+
+o/%.a : %.asm | o o/sim
 	cd $(dir $<) && $(CC) -c $(ASFLAGS) -o ../$@ $(notdir $<) 
 
 
@@ -109,3 +131,8 @@ o/msccf.a: sccf.mac equates md.equates sccf.asm inc/tty.inc
 o/null.a: port.mac inc/tty.inc
 o/port.a: port.mac equates inc/tty.inc
 o/psccf.a: sccf.mac equates pr.equates sccf.asm inc/tty.inc
+
+# sim
+o/sim/sim.a: sim/sim.mac sim/simequates.equ
+o/sim/simlib.a: sim/simlib.mac sim/simequates.equ
+
