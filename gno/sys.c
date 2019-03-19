@@ -968,7 +968,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     for (i = 0; j ; ++i) {
         fdentryPtr f = &(ft->fds[i]);
         if (!f->refNum) continue;
-        if (f->refNum & rfCLOSEEXEC) {
+        if (f->refFlags & rfCLOSEEXEC) {
             Word ClosePB[2];
             ClosePB[0] = 1;
             ClosePB[1] = i;
