@@ -25,6 +25,7 @@ all: $(TARGETS)
 
 kern: $(addprefix o/,$(KERN_OBJS)) | o
 	occ $(LDFLAGS) -o $@ $^
+	$(CHTYP) -t s16 $@
 
 
 null: o/null.a
