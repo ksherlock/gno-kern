@@ -1552,6 +1552,9 @@ NewReadChar	START
 	using TextToolsInfo
 	using	InOutData
 
+echo	equ   7+2+1
+char	equ   7+2+1+2
+
 	jsl   decBusy
 
 	phd                      ; where does this go?
@@ -1598,12 +1601,12 @@ isfg	anop
 	pla
 	and   InANDMask,x
 	ora   InORMask,x
-	sta   7+2+1+2,s
+	sta   char,s
 
-	lda   7+2+1,s
+	lda   echo,s
 	and   #%1
 	beq   done
-	lda   7+2+1+2,s          ;Echo the character
+	lda   char,s          ;Echo the character
 	and   OutANDMask,x
 	ora   OutORMask,x
 	jsl   VectOut
@@ -1624,6 +1627,11 @@ done	anop
 NewTextReadBlock	START
 	using KernelStruct
 	using TextToolsInfo
+
+echo	equ   7+2+0
+count	equ   7+2+2
+offset	equ   7+2+4
+buffer	equ   7+2+6
 
 	jsl   decBusy
 	phd
@@ -1670,12 +1678,12 @@ loop	anop
 	lda	1,s
 	and   InANDMask,x
 	ora   InORMask,x
-	ldy   7+2+4
+	ldy   offset
 	short a
-	sta   [7+2+6],y
+	sta   [buffer],y
 	long  a
 
-	lda   7+2+0
+	lda   echo
 	and   #%1
 	beq   noecho
 	lda   1,s	;Echo the character
@@ -1684,9 +1692,9 @@ loop	anop
 	jsl   VectOut
 
 noecho	pla
-	inc   7+2+4
-	lda   7+2+4
-	cmp   7+2+2
+	inc   offset
+	lda   offset
+	cmp   count
 	bne   loop
 
 done	anop
