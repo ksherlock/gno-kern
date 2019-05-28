@@ -1641,6 +1641,9 @@ buffer	equ   7+2+6
 	phk
 	plb
 
+	lda   #$fffe
+	trb   echo
+
 dobgcheck	lda   truepid
 	xba
 	lsr   a
@@ -1667,6 +1670,8 @@ dobgcheck	lda   truepid
 	jmp   >tool_exit
 
 isfg	anop
+	lda   count
+	beq   done
 loop	anop
 	jsl   VectIn
 	pha
@@ -1684,7 +1689,6 @@ loop	anop
 	long  a
 
 	lda   echo
-	and   #%1
 	beq   noecho
 	lda   1,s	;Echo the character
 	and   OutANDMask,x
@@ -1693,8 +1697,7 @@ loop	anop
 
 noecho	pla
 	inc   offset
-	lda   offset
-	cmp   count
+	dec   count
 	bne   loop
 
 done	anop
@@ -1735,6 +1738,10 @@ echoFlag	equ   7+2+6
 	phk
 	plb
 	jsl   decBusy
+
+; only bit 1 of echo flag used.
+	lda   #$fffe
+	trb   echoFlag
 
 dobgcheck	lda   truepid
 	xba
