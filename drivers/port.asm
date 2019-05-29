@@ -694,7 +694,7 @@ checkIntr	START
 
 	ldy	#sg_flags
 	lda	[dTermioPtr],y
-	bit	#$20	; RAW mode?
+	bit	#RAW	; RAW mode?
 	beq	x9	; yep, no character checking
 	brl	notty
 x9	ldy	#t_quitc
