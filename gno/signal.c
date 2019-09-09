@@ -707,17 +707,24 @@ void *Ksignal(int *ERRNO, void (*func)(void), int sig) {
 
     if (kp->gsosDebug & 16)
         kern_printf("signal(sig: %d, func:%06lX)\n\r", sig, func);
+
+    if (sig < 1 || sig >= NSIG) {
+        *ERRNO = EINVAL;
+        return (void *)-1;
+    }
+    if (sig == SIGKILL || sig == SIGSTOP) {
+        if (func == SIG_DFL) return SIG_DFL;
+        /* violently enforce restriction on signal handling */
+        *ERRNO = EINVAL;
+        return (void *)-1;
+    }
+
     /* $$$  siginf = kp->procTable[Kgetpid()].siginfo; */
     siginf = PROC->siginfo;
-    /*   printf("siginf: %08lX\n",siginf);  */
     old = siginf->v_signal[sig];
-    /* silently enforce restriction on signal handling */
-    if ((sig != SIGKILL) && (sig != SIGSTOP)) {
         if (func == SIG_IGN)
             siginf->sigpending &= ~sigmask(sig);
-        /*       siginf->sigpending |= sigmask(sig);  */
         siginf->v_signal[sig] = func;
-    }
     return old;
 }
 
