@@ -747,7 +747,7 @@ longword Ksigsetmask(int *ERRNO, longword mask) {
     mask &= 0xFFFAFEFFl;
     ready = siginf->sigpending & ~mask;
     if (ready) {
-        for (i = 1; i < 32; i++)
+        for (i = 1; i < NSIG; i++)
             if (ready & sigmask(i)) {
                 addsig(Kgetpid(), i);
                 siginf->sigpending &= ~sigmask(i);
