@@ -148,6 +148,13 @@ int KERNkill(int *ERRNO, int signum, int pid) {
 
     if (kp->gsosDebug & 8)
         kern_printf("kill (-%d):pid %d\n\r", signum, pid);
+
+    /* 0 is valid signal to check if process is alive */
+    if (signum < 0 || signum >= NSIG) {
+        *ERRNO = EINVAL;
+        return -1;
+    }
+
     /* $$$ if (pid == 0) pid = -(kp->procTable[Kgetpid()].pgrp); */
     if (pid == 0)
         pid = -(PROC->pgrp);
@@ -172,10 +179,6 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     }
     if (!signum)
         return 0;
-    if ((signum < 1) || (signum > 32)) {
-        *ERRNO = EINVAL;
-        return -1;
-    }
     tosig = &(kp->procTable[mpid]);
     sig = tosig->siginfo;
     disableps();
