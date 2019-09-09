@@ -159,6 +159,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     if (pid == 0)
         pid = -(PROC->pgrp);
     if (pid < 0) {
+        if (!signum) return 0;
         pid = 0 - pid;
         for (i = 0; i < NPROC; i++) {
             if ((kp->procTable[i].processState) &&
