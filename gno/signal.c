@@ -183,6 +183,13 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     tosig = &(kp->procTable[mpid]);
     sig = tosig->siginfo;
     disableps();
+
+    /* special case ... if in wait,  sigchild */
+    if (tosig->processState == procWAITSIGCH && signum == SIGCHLD) {
+        tosig->waitdone = 1;
+        tosig->processState = procREADY;
+    }
+
     if (sig->signalmask & sigmask(signum)) {
         sig->sigpending |= sigmask(signum);
         enableps();
@@ -215,12 +222,10 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     if (tosig->processState == procPAUSED)
         tosig->processState = procREADY;
     else if (tosig->processState == procWAITSIGCH) {
-        if (signum == SIGCHLD)
-            tosig->waitdone = 1;
-        else {
+        /* procWAITSIGCH/SIGCHILD previously checked */
             if (sig->v_signal[signum] != SIG_DFL)
                 tosig->waitdone = -1;
-        }
+
         tosig->processState = procREADY; /* restart the process, bloke! */
     }
 
