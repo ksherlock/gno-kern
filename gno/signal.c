@@ -83,7 +83,7 @@ void enqueueWait(int targetpid, int pid, union wait status) {
 
 word numInWaitQueue(int pid) {
     chldInfoPtr w;
-    word x;
+    word x = 0;
 
     w = kp->procTable[pid].waitq;
     while (w != NULL) {
