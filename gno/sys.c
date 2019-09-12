@@ -298,7 +298,7 @@ void printFDS(fdtablePtr f) {
             case rtPIPE:
                 fprintf(stderr, "PIPE ");
                 break;
-            case rtTTY:
+            case rtDEV:
                 fprintf(stderr, "TTY  ");
                 break;
             default:
@@ -1100,7 +1100,7 @@ int KERNtcnewpgrp(int *ERRNO, int fdtty) {
         *ERRNO = EBADF;
         return -1;
     }
-    if (tty->refType != rtTTY) {
+    if (tty->refType != rtDEV) {
         *ERRNO = ENOTTY;
         return -1;
     }
@@ -1139,7 +1139,7 @@ int KERNsettpgrp(int *ERRNO, int fdtty) {
         *ERRNO = EBADF;
         return -1;
     }
-    if (tty->refType != rtTTY) {
+    if (tty->refType != rtDEV) {
         *ERRNO = ENOTTY;
         return -1;
     }
@@ -1191,7 +1191,7 @@ int KERNtctpgrp(int *ERRNO, int pid, int fdtty) {
         return -1;
     }
     devNum = tty->refNum - 1;
-    if (tty->refType != rtTTY) {
+    if (tty->refType != rtDEV) {
         *ERRNO = ENOTTY;
         return -1;
     }

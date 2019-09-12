@@ -34,7 +34,7 @@
 
 #define rtGSOS 0
 #define rtPIPE 1
-#define rtTTY 2
+#define rtDEV 2
 #define rtSOCKET 3
 
 #define rfPIPEREAD 1  /* read end of the pipe */

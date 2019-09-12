@@ -219,7 +219,7 @@ int KERNfstat(int *ERRNO, struct stat *s_buf, int fd) {
         s_buf->st_mode = S_IFSOCK;
         enableps();
         return 0;
-    } else if (fp->refType == rtTTY) {
+    } else if (fp->refType == rtDEV) {
         memset(s_buf, 0, sizeof(struct stat));
         s_buf->st_mode = S_IFCHR;
         enableps();
