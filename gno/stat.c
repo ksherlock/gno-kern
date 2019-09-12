@@ -29,6 +29,7 @@ segment "KERN2     ";
 
 #include "proc.h"
 #include "sys.h"
+#include "gno.h"
 
 #include "include/errno.h"
 #include "include/stat.h"
@@ -208,7 +209,8 @@ int KERNfstat(int *ERRNO, struct stat *s_buf, int fd) {
 
     disableps();
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "fstat: fd: %d s_buf: %06lX\n", fd, (unsigned long)s_buf);
+        kern_printf("%u: fstat(%d, %p)\r\n", PROC->flpid, fd, s_buf);
+
     if ((fd == 0) || ((fp = getFDptr(fd)) == NULL) || (fp->refNum == 0)) {
         *ERRNO = EBADF;
         enableps();
@@ -256,7 +258,8 @@ int KERNlstat(int *ERRNO, struct stat *s_buf, const char *filename) {
     int rc;
 
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "stat: lpath: %s s_buf: %06lX\n", filename, (unsigned long)s_buf);
+        kern_printf("%u: lstat(\"%s\", %p)\r\n", PROC->flpid, filename ? filename : "<null>", s_buf);
+
     rc = statCommon(filename, s_buf);
     if (rc)
         *ERRNO = rc;
@@ -267,7 +270,8 @@ int KERNstat(int *ERRNO, struct stat *s_buf, const char *filename) {
     int rc;
 
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "stat: path: %s s_buf: %06lX\n", filename, (unsigned long)s_buf);
+        kern_printf("%u: stat(\"%s\", %p)\r\n", PROC->flpid, filename ? filename : "<null>", s_buf);
+
     rc = statCommon(filename, s_buf);
     if (rc)
         *ERRNO = rc;

@@ -383,6 +383,10 @@ pascal int KERNSetGNOQuitRec(word pCount, GSString255Ptr pathname, word flags,
 int KERNgetpid(void)
 /* get the process id of currently executing process */
 {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: getpid()\r\n", PROC->flpid); 
+
     /*$$$ return( kp->procTable[kp->truepid].flpid ); */
     return (PROC->flpid);
 }
@@ -390,12 +394,20 @@ int KERNgetpid(void)
 int KERNgetppid(int *ERRNO)
 /* get the pid of the process' parent */
 {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: getppid()\r\n", PROC->flpid); 
+
     return (kp->procTable[PROC->parentpid].flpid);
 }
 
 int KERNgetpgrp(int *ERRNO, int pid)
 /* get the pgrp field for a specified process */
 {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: getpgrp(%d)\r\n", PROC->flpid, pid); 
+   
     int mpid;
     mpid = mapPID(pid);
     if (mpid == -1) {
@@ -408,6 +420,9 @@ int KERNgetpgrp(int *ERRNO, int pid)
 int KERNsetpgrp(int *ERRNO, int pgrp, int pid) {
     int mpid;
     int pp;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: setpgrp(%d, %d)\r\n", PROC->flpid, pid, pgrp);
 
     mpid = mapPID(pid);
     if (mpid == -1) {
@@ -429,7 +444,7 @@ int KERNsetpgrp(int *ERRNO, int pgrp, int pid) {
     kp->procTable[mpid].pgrp = pgrp;
 
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "setpgrp: pid: %d, oldpgrp: %d, newpgrp: %d\n",
+        kern_printf("setpgrp: pid: %d, oldpgrp: %d, newpgrp: %d\r\n",
             pid, pp, pgrp);
 
     enableps();
@@ -437,26 +452,46 @@ int KERNsetpgrp(int *ERRNO, int pgrp, int pid) {
 }
 
 int KERNgetuid(int *ERRNO) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: getuid()\r\n", PROC->flpid);
+
     return (PROC->p_uid);
     /* $$$ return (kp->procTable[Kgetpid()].p_uid); */
 }
 
 int KERNgeteuid(int *ERRNO) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: geteuid()\r\n", PROC->flpid);
+
     return (PROC->p_euid);
     /* $$$ return (kp->procTable[Kgetpid()].p_euid); */
 }
 
 int KERNgetgid(int *ERRNO) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: getgid()\r\n", PROC->flpid);
+
     return (PROC->p_gid);
     /* $$$ return (kp->procTable[Kgetpid()].p_gid); */
 }
 
 int KERNgetegid(int *ERRNO) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: etegid()\r\n", PROC->flpid);
+
     return (PROC->p_egid);
     /* $$$ return (kp->procTable[Kgetpid()].p_egid); */
 }
 
 int KERNsetreuid(int *ERRNO, int ruid, int euid) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: setreuid(%d, %d)\r\n", PROC->flpid, euid, ruid);
+
     if (ruid == -1)
         ruid = PROC->p_uid;
     if (euid == -1)
@@ -476,6 +511,9 @@ int KERNsetuid(int *ERRNO, int uid) {
     /* $$$ struct pentry *p;
     p = &(kp->procTable[Kgetpid()]);  */
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: setuid(%d)\r\n", PROC->flpid, uid);
+
     if ((PROC->p_uid == 0) || (uid == PROC->p_uid) || (uid == PROC->p_euid)) {
         PROC->p_uid = uid;
         PROC->p_euid = uid;
@@ -486,6 +524,10 @@ int KERNsetuid(int *ERRNO, int uid) {
 }
 
 int KERNsetregid(int *ERRNO, int rgid, int egid) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: setregid(%d, %d)\r\n", PROC->flpid, egid, rgid);
+
     if (rgid == -1)
         rgid = PROC->p_gid;
     if (egid == -1)
@@ -505,6 +547,9 @@ int KERNsetgid(int *ERRNO, int gid) {
     /* $$$ struct pentry *p;
     p = &(kp->procTable[Kgetpid()]);  */
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: setgid(%d)\r\n", PROC->flpid, gid);
+
     if ((PROC->p_uid == 0) || (gid == PROC->p_gid) || (gid == PROC->p_egid)) {
         PROC->p_gid = gid;
         PROC->p_egid = gid;
@@ -518,6 +563,9 @@ int KERNtimes(int *ERRNO, struct tms *buffer) {
     /* $$$   buffer->tms_utime = kp->procTable[Kgetpid()].ticks;
        buffer->tms_cutime = kp->procTable[Kgetpid()].childTicks;
        buffer->tms_stime = buffer->tms_cstime = 0l;  */
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: times(%p)\r\n", PROC->flpid, buffer);
 
     buffer->tms_utime = PROC->ticks;
     buffer->tms_cutime = PROC->childTicks;
@@ -564,9 +612,6 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
     extern void incPipe(int, int);
     extern int allocPID(void);
 
-    /*   printf("address = %08lX\n",subr); */
-    if (kp->gsosDebug & 16)
-        fprintf(stderr, "fork(%06lX)\n", (unsigned long)funcptr);
     newID = GetNewID(0x1000);
 
     fstack = NewHandle((long)stackSize, newID | 0x0100, 0xC105, NULL);
@@ -704,11 +749,19 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
 int KERNfork(int *ERRNO, void *subr) {
     word nargs = 0;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: fork(%p)\r\n", PROC->flpid, subr);
+
     return commonFork((void *)subr, 1024, 0, NULL, &nargs, ERRNO);
 }
 
 pascal int KERNfork2(void (*funcptr)(void), word stackSize, int prio, char *name,
                      word *argv, int *ERRNO) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: fork2(%p, %u, %d, \"%s\", %p)\r\n",
+            PROC->flpid, funcptr, stackSize, prio, name ? name : "<null>", argv);
+
     return commonFork(funcptr, stackSize, prio, name, argv, ERRNO);
 }
 
@@ -758,10 +811,14 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     extern void disableBuf(void);
     extern void enableBuf(void);
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: execve(\"%s\", \"%s\")\r\n",
+            PROC->flpid,
+            filename ? filename : "<null>",
+            cmdline ? cmdline : "<null>");
+
     /* always disableps() when screwing with process tables */
     disableps();
-    if (kp->gsosDebug & 16)
-        fprintf(stderr, "execve(%s,%s)\n", filename, cmdline);
 
     p = PROC;
         /* $$$ &(kp->procTable[Kgetpid()]);*/ /* aaaaaaaaaaarrrgghhh!!!!! */
@@ -1031,6 +1088,9 @@ struct kvmt *KERNkvm_open(int *ERRNO) {
     int KERNkvmsetproc(int *ERRNO, struct kvmt *kd);
     struct kvmt *newk;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: kvm_open()\r\n", PROC->flpid);
+
     newk = (struct kvmt *)kmalloc(sizeof(kvmt));
     if (newk == NULL) {
         *ERRNO = ENOMEM;
@@ -1041,6 +1101,10 @@ struct kvmt *KERNkvm_open(int *ERRNO) {
 }
 
 SYSCALL KERNkvm_close(int *ERRNO, struct kvmt *k) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: kvm_close(%p)\r\n", PROC->flpid, k);
+
     if (kfree(k))
         return SYSERR;
     return (OK);
@@ -1048,6 +1112,11 @@ SYSCALL KERNkvm_close(int *ERRNO, struct kvmt *k) {
 
 struct pentry *KERNkvmgetproc(int *ERRNO, int pid, struct kvmt *kd) {
     int mpid;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: kvm_get_proc(%p, %d)\r\n", PROC->flpid, kd, pid);
+
+
     mpid = mapPID(pid);
     if (mpid == -1) {
         *ERRNO = ESRCH;
@@ -1062,6 +1131,10 @@ struct pentry *KERNkvmgetproc(int *ERRNO, int pid, struct kvmt *kd) {
 struct pentry *KERNkvmnextproc(int *ERRNO, struct kvmt *kd) {
     int i;
     int mpid;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: kvm_next_proc(%p)\r\n", PROC->flpid, kd);
+
 
     if (kd->procIndex < NPROC) {
         memcpy(&(kd->kvm_pent), &(kp->procTable[kd->procIndex]),
@@ -1082,6 +1155,9 @@ struct pentry *KERNkvmnextproc(int *ERRNO, struct kvmt *kd) {
 int KERNkvmsetproc(int *ERRNO, struct kvmt *kd) {
     int i;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: kvm_set_proc(%p)\r\n", PROC->flpid, kd);
+
     for (i = 0; i < NPROC; i++)
         if (kp->procTable[i].processState != procUNUSED) {
             kd->procIndex = i;
@@ -1094,6 +1170,10 @@ int KERNtcnewpgrp(int *ERRNO, int fdtty) {
     unsigned i, devNum, ttyPgrp;
     fdentryPtr tty;
     extern fdentryPtr getFDptr(int);
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: tcnewpgrp(%d)\r\n", PROC->flpid, fdtty);
+
 
     tty = getFDptr(fdtty);
     if ((tty == NULL) || (tty->refNum == 0)) {
@@ -1121,7 +1201,7 @@ int KERNtcnewpgrp(int *ERRNO, int fdtty) {
     if (ttyPgrp = ttys[devNum].pgrp)
         pgrpInfo[ttyPgrp - 2].pgrpref--;
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "tcnewpgrp- TTY:%d  pgrp:%d\n", devNum, i + 2);
+        kern_printf("tcnewpgrp - TTY: %d  pgrp: %d\r\n", devNum, i + 2);
     ttys[devNum].pgrp = i + 2;
     pgrpInfo[i].pgrpref++;
     enableps();
@@ -1133,6 +1213,9 @@ int KERNsettpgrp(int *ERRNO, int fdtty) {
     int pp, devNum;
     fdentryPtr tty;
     extern fdentryPtr getFDptr(int);
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: settpgrp(%d)\r\n", PROC->flpid, fdtty);
 
     tty = getFDptr(fdtty);
     if ((tty == NULL) || (tty->refNum == 0)) {
@@ -1164,7 +1247,7 @@ int KERNsettpgrp(int *ERRNO, int fdtty) {
     PROC->pgrp = p;
 
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "settpgrp pid: %d, oldpgrp: %d, newpgrp: %d\n",
+        kern_printf("settpgrp pid: %d oldpgrp: %d newpgrp: %d\r\n",
                 PROC->flpid, pp, p);
 
     enableps();
@@ -1174,6 +1257,9 @@ int KERNtctpgrp(int *ERRNO, int pid, int fdtty) {
     int p, mpid, devNum;
     fdentryPtr tty;
     extern fdentryPtr getFDptr(int);
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: tctpgrp(%d, %d)\r\n", PROC->flpid, fdtty, pid);
 
     /* should check pid to be sure it's == getpid or a child of it */
     mpid = mapPID(pid);
@@ -1204,7 +1290,7 @@ int KERNtctpgrp(int *ERRNO, int pid, int fdtty) {
             pgrpInfo[ttys[devNum].pgrp - 2].pgrpref--;
     }
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "tctpgrp TTY:%d pid:%d pgrp:%d\n", devNum, pid, p);
+        kern_printf("tctpgrp TTY: %d pid: %d pgrp: %d\r\n", devNum, pid, p);
     ttys[devNum].pgrp = p;
     enableps();
 }
@@ -1213,7 +1299,8 @@ int KERNsetdebug(int code) {
     int old;
 
     if (kp->gsosDebug & 16)
-        fprintf(stderr, "setdebug %d\n", code);
+        kern_printf("%u: setdebug(%u)\r\n", PROC->flpid, code);
+
     if ((code < 0) || (code > 63))
         return SYSERR;
     old = kp->gsosDebug;
@@ -1223,6 +1310,11 @@ int KERNsetdebug(int code) {
 
 void *KERNsetsystemvector(void *execvec) {
     void *x;
+
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: set_system_vector(%p)\r\n", PROC->flpid, execvec);
+
     x = PROC->executeHook;
     PROC->executeHook = execvec;
 
@@ -1258,7 +1350,7 @@ int KERNpipe(int *ERRNO, int filedes[2])
     extern void disposePipe(int);
 
     if (kp->gsosDebug & 16)
-        printf("pipe(%06lX)\n", (unsigned long)filedes);
+        kern_printf("%u: pipe(%p)\r\n", PROC->flpid, filedes);
     /* $$$  ft = kp->procTable[Kgetpid()].openFiles; */
     pipen = newPipe();
     pread = allocFD(&fdread);
@@ -1312,6 +1404,9 @@ int KERNdup(int *ERRNO, int filedes) {
     int i, j, fd;
     extern void IncRefnum(int, int);
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: dup(%d)\r\n", PROC->flpid, filedes);
+
     disableps();
     /* $$$  p = &(kp->procTable[Kgetpid()]); */
     fd = filedes - 1;
@@ -1347,6 +1442,9 @@ int KERNdup2(int *ERRNO, int filedes2, int filedes) {
     int i, j, fd, fd2;
     extern void IncRefnum(int, int);
     int cl[2];
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: dup2(%d, %d)\r\n", PROC->flpid, filedes, filedes2);
 
     disableps();
     /* $$$   p = &(kp->procTable[Kgetpid()]); */
