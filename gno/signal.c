@@ -149,7 +149,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     extern void disposevar(int);
 
     if (kp->gsosDebug & 8)
-        kern_printf("kill (-%d):pid %d\n\r", signum, pid);
+        kern_printf("%u: kill(%d, %d)\r\n", PROC->flpid, pid, signum);
 
     /* 0 is valid signal to check if process is alive */
     if (signum < 0 || signum >= NSIG) {
@@ -529,6 +529,10 @@ int KERNwait(int *ERRNO, union wait *stat) {
     unsigned i;
     chldInfo waitinfo;
 
+
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: wait(%p)\r\n", PROC->flpid, stat);
+
     disableps();
     for (i = 0; i < NPROC; i++) {
         if (kp->procTable[i].processState) {
@@ -567,6 +571,9 @@ int KERNwait(int *ERRNO, union wait *stat) {
 longword KERNalarm(int *ERRNO, longword seconds) {
     longword old;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: alarm(%lu)\r\n", PROC->flpid, seconds);
+
     asm { php sei }
     /* $$$ old = kp->procTable[Kgetpid()].alarmCount; */
     old = PROC->alarmCount;
@@ -578,6 +585,10 @@ longword KERNalarm(int *ERRNO, longword seconds) {
 
 longword KERNalarm10(int *ERRNO, longword seconds10) {
     longword old;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: alarm10(%lu)\r\n", PROC->flpid, seconds10);
+
     asm { php sei }
     /* $$$ old = kp->procTable[Kgetpid()].alarmCount; */
     old = PROC->alarmCount;
@@ -589,6 +600,9 @@ longword KERNalarm10(int *ERRNO, longword seconds10) {
 
 int KERNsigpause(int *ERRNO, longword mask) {
     longword oldmask;
+
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: sigpause(%08lx)\r\n", PROC->flpid, mask);
 
     disableps();
     oldmask = Ksigsetmask(ERRNO, mask);
@@ -716,8 +730,8 @@ void *Ksignal(int *ERRNO, void (*func)(void), int sig) {
     void (*old)(void);
     struct sigrec *siginf;
 
-    if (kp->gsosDebug & 16)
-        kern_printf("signal(sig: %d, func:%06lX)\n\r", sig, func);
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: signal(%d, %p)\r\n", PROC->flpid, sig, func);
 
     if (sig < 1 || sig >= NSIG) {
         *ERRNO = EINVAL;
@@ -743,6 +757,9 @@ longword Ksigblock(int *ERRNO, longword mask) {
     struct sigrec *siginf;
     longword oldmask;
 
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: sigblock(%08lx)\r\n", PROC->flpid, mask);
+
     /* $$$  siginf = kp->procTable[Kgetpid()].siginfo; */
     siginf = PROC->siginfo;
     oldmask = siginf->signalmask;
@@ -756,6 +773,9 @@ longword Ksigsetmask(int *ERRNO, longword mask) {
     struct sigrec *siginf;
     longword oldmask, ready;
     int i;
+
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: sigsetmask(%08lx)\r\n", PROC->flpid, mask);
 
     disableps();
     /* $$$ siginf = kp->procTable[Kgetpid()].siginfo; */
