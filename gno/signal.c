@@ -648,11 +648,21 @@ void rcvttrap(int sig, int code) { /* foobar! */ }
 
 #pragma toolparms 1
 
-longword KERNreceive(int *ERRNO) { return Kreceive(ERRNO); }
+longword KERNreceive(int *ERRNO) {
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: receive()\r\n", PROC->flpid);
+
+    return Kreceive(ERRNO);
+}
+
+/* TODO - should this set errno? */
 longword KERNrecvclr(int *ERRNO) {
     longword tmp;
     struct pentry *p;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: recvclr()\r\n", PROC->flpid);
 
     p = PROC;
     disableps();
@@ -672,6 +682,9 @@ longword KERNrecvtim(int *ERRNO, int timeout) {
     longword oldalrm, oldmask, tmp;
     struct pentry *p;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: recvtim(%d)\r\n", PROC->flpid, timeout);
+
     oldmask = Ksigblock(ERRNO, SIGALRM);
     oldsig = Ksignal(ERRNO, rcvttrap, SIGALRM);
     /* $$$ p = &(kp->procTable[Kgetpid()]);  */
@@ -689,6 +702,9 @@ longword KERNrecvtim(int *ERRNO, int timeout) {
 int KERNsend(int *ERRNO, longword msg, int pid) {
     struct pentry *targetp;
     int mpid;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: send(%d, %lx)\r\n", PROC->flpid, pid, msg);
 
     mpid = mapPID(pid);
     if ((mpid == 0) || (mpid == -1)) {
