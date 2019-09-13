@@ -4,6 +4,7 @@ segment "KERN2     ";
 
 #pragma stacksize 1024
 #pragma optimize 79
+#pragma debug 0x8000
 
 #include <stdio.h>
 #include <stdlib.h>

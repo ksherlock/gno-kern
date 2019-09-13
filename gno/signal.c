@@ -28,9 +28,11 @@
   (shadow, statereg, etc) because those would only be modified by routines
   in emulation mode, which should by all accounts be mutexed.
 */
-#pragma optimize 79
 
 segment "KERN2     ";
+#pragma optimize 79
+#pragma debug 0x8000
+
 
 #include <stdio.h>
 #include <stdlib.h>

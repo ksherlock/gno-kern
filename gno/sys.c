@@ -1,9 +1,5 @@
 /*	$Id: sys.c,v 1.1 1998/02/02 08:19:05 taubert Exp $ */
 
-#pragma optimize 79
-
-segment "KERN2     ";
-
 /*
 
        sys.c
@@ -13,6 +9,12 @@ segment "KERN2     ";
        Copyright 1991-1998, Procyon, Inc.
        Jawaid Bazyar and Derek Taubert
 */
+
+
+segment "KERN2     ";
+#pragma optimize 79
+#pragma debug 0x8000
+
 
 #include <stdio.h>
 #include <stdlib.h>

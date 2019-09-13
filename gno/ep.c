@@ -5,9 +5,10 @@
         this code should be changed from using GetPrefix to grabbing
           the prefixes directly from the process entry
 */
-#pragma optimize 79
 
 segment "KERN2     ";
+#pragma optimize 79
+#pragma debug 0x8000
 
 #include <ctype.h>
 #include <stdio.h>
