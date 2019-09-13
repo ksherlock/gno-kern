@@ -301,7 +301,7 @@ void printFDS(fdtablePtr f) {
                 fprintf(stderr, "PIPE ");
                 break;
             case rtDEV:
-                fprintf(stderr, "TTY  ");
+                fprintf(stderr, "DEV  ");
                 break;
             default:
                 fprintf(stderr, "%d ", f->fds[i].refType);
