@@ -720,7 +720,7 @@ void cSignalHook(int signum) {
     disableps();
     /* $$$  siginf = kp->procTable[Kgetpid()].siginfo; */
     siginf = PROC->siginfo;
-    Ksigsetmask(&errno, siginf->signalmask &= ~sigmask(signum));
+    Ksigsetmask(&errno, siginf->signalmask & ~sigmask(signum));
     enableps();
 }
 
