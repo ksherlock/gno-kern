@@ -139,7 +139,6 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     struct pentry *tosig;
     struct sigrec *sig;
     int i, j, mpid;
-    longword wait;
     word ClosePB[2];
     union wait status;
     extern int OLDGSOSST(word callnum, void *pBlock);
@@ -285,14 +284,6 @@ int KERNkill(int *ERRNO, int signum, int pid) {
 
         /*printf("kill (-%d):pid %d (userID %04X)",signum,pid,tosig->userID);*/
 
-#if 0
-	if (kp->gsosDebug & 8) {
-	int i;
-		for (i=0;i<sizeof(struct pentry);i++)
-			fprintf(stderr, "%02x ", ((unsigned char *)tosig)[i]);
-		fprintf(stderr, "\n");
-	}
-#endif
 
         if (tosig->parentpid != 0) {
             if (tosig->flags & FL_NORMTERM) {
