@@ -16,6 +16,8 @@ segment "KERN2     ";
 #include <string.h>
 #include "proc.h"
 #include "sys.h"
+#include "gno.h"
+
 #include <gsos.h>
 
 extern void PANIC(const char *str);
@@ -385,9 +387,7 @@ phase2:
     g_out->length = outind;
 goaway:
     if (kp->gsosDebug & 2) {
-        fprintf(stderr, "EP[");
-        printGS(g_out);
-        fprintf(stderr, "]\n");
+        kern_printf("EP[%.*s]\r\n", g_out->length, g_out->text);
     }
     if ((g_out->length == 1) && (g_out->text[0] == ':'))
         g_out->length = 0;
