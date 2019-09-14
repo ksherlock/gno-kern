@@ -153,17 +153,36 @@ SYSCALL Kscount(int *ERRNO, int sem) {
 #pragma toolparms 1
 
 SYSCALL KERNswait(int *ERRNO, int sem) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: swait(%d)\r\n", PROC->flpid, sem);
+
     return commonSwait(ERRNO, sem, procBLOCKED, BLOCKED_SWAIT);
 }
 
-SYSCALL KERNscreate(int *ERRNO, int count) { return Kscreate(ERRNO, count); }
+SYSCALL KERNscreate(int *ERRNO, int count) {
 
-SYSCALL KERNscount(int *ERRNO, int sem) { return Kscount(ERRNO, sem); }
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: screate(%d)\r\n", PROC->flpid, count);
+
+    return Kscreate(ERRNO, count);
+}
+
+SYSCALL KERNscount(int *ERRNO, int sem) {
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: scount(%d)\r\n", PROC->flpid, sem);
+
+    return Kscount(ERRNO, sem);
+}
 
 /* signal a semaphore, releasing one waiting process */
 SYSCALL KERNssignal(int *ERRNO, int sem) {
     struct sentry *sptr;
     int mpid;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: ssignal(%d)\r\n", PROC->flpid, sem);
 
     disableps();
     if (isbadsem(sem) || (sptr = &_semaph[sem])->sstate == SFREE) {
@@ -187,6 +206,9 @@ SYSCALL KERNssignal(int *ERRNO, int sem) {
 SYSCALL KERNsdelete(int *ERRNO, int sem) {
     int mpid;
     struct sentry *sptr; /* address of sem to free */
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: sdelete(%d)\r\n", PROC->flpid, sem);
 
     disableps();
     if (isbadsem(sem) || (sptr = &_semaph[sem])->sstate == SFREE) {

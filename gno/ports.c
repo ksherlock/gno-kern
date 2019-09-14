@@ -5,6 +5,7 @@
 
 #include "conf.h"
 #include "gno.h"
+#include "sys.h"
 #include "kernel.h"
 #include "proc.h"
 #include "include/errno.h"
@@ -15,6 +16,8 @@
 struct ptnode *ptfree; /* list of free queue nodes */
 struct pt ports[NPORTS];
 int ptnextp;
+
+extern kernelStructPtr kp;
 
 extern SYSCALL commonSwait(int *ERRNO, int sem, int blockas, int waitdone);
 
@@ -57,6 +60,9 @@ pascal SYSCALL KERNpcreate(int count, int *ERRNO) {
     int ps;
     int i, p;
     struct pt *ptptr;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: pcreate(%d)\r\n", PROC->flpid, count);
 
     if (count < 0)
         return SYSERR;
@@ -107,6 +113,9 @@ pascal SYSCALL KERNpsend(int portid, long int msg, int *ERRNO) {
     struct pt *ptptr;
     int seq;
     struct ptnode *freenode;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: psend(%d, %ld)\r\n", PROC->flpid, portid, msg);
 
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
@@ -159,6 +168,9 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
     long int msg;
     struct ptnode *nxtnode;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: preceive(%d)\r\n", PROC->flpid, portid);
+
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
@@ -204,7 +216,7 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
  *	_ptclear - used by pdelete and preset to clear a port
  */
 
-void _ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
+static void _ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
     struct ptnode *p;
 
     /* put port in limbo until done freeing processes */
@@ -246,6 +258,9 @@ pascal SYSCALL KERNpdelete(int portid, int (*dispose)(long int), int *ERRNO) {
     int ps;
     struct pt *ptptr;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: pdelete(%d, %06lx)\r\n", PROC->flpid, portid, (unsigned long)dispose);
+
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
@@ -269,6 +284,9 @@ pascal SYSCALL KERNpreset(int portid, int (*dispose)(long int), int *ERRNO) {
     int ps;
     struct pt *ptptr;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: preset(%d, %06lx)\r\n", PROC->flpid, portid, (unsigned long)dispose);
+
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
@@ -285,6 +303,9 @@ pascal SYSCALL KERNpreset(int portid, int (*dispose)(long int), int *ERRNO) {
 
 pascal SYSCALL KERNpbind(int portid, char *name, int *ERRNO) {
     struct pt *ptptr;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: pbind(%d, \"%s\")\r\n", PROC->flpid, portid, name ? name : "<null>");
 
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
@@ -305,6 +326,9 @@ pascal SYSCALL KERNpgetport(char *name, int *ERRNO) {
     struct pt *ptptr;
     unsigned i;
 
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: pgetport(\"%s\")\r\n", PROC->flpid, name ? name : "<null>");
+
     disableps();
     for (i = 0; i < NPORTS; i++)
         if ((ports[i].ptstate == PTALLOC) && (ports[i].ptname != NULL) &&
@@ -319,6 +343,9 @@ pascal SYSCALL KERNpgetport(char *name, int *ERRNO) {
 pascal SYSCALL KERNpgetcount(int portid, int *ERRNO) {
     struct pt *ptptr;
     int c, d;
+
+    if (kp->gsosDebug & 16)
+        kern_printf("%u: pgetcount(%d)\r\n", PROC->flpid, portid);
 
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
