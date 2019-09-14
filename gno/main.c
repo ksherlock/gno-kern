@@ -465,9 +465,12 @@ int kern_printf(const char *format, ...) {
     va_list list;
     int ret;
 
-    va_start(list, format);
     disableps();
+    va_start(list, format);
+
     ret = vsnprintf(buffer, KP_BUFSIZ, format, list);
+    va_end(list);
+
 #ifdef GSPLUS_DEBUGGER
     /* clang-format: off */
     asm {
@@ -478,12 +481,10 @@ int kern_printf(const char *format, ...) {
         dcb 0xa0
     }
     /* clang-format: on */
-    enableps()
 #else
-    enableps()
     WriteCString(buffer);
 #endif
-    va_end(list);
+    enableps()
     return ret;
 }
 
