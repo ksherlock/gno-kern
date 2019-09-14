@@ -210,7 +210,7 @@ int KERNfstat(int *ERRNO, struct stat *s_buf, int fd) {
 
     disableps();
     if (kp->gsosDebug & 16)
-        kern_printf("%u: fstat(%d, %p)\r\n", PROC->flpid, fd, s_buf);
+        kern_printf("%u: fstat(%d, %06lx)\r\n", PROC->flpid, fd, (unsigned long)s_buf);
 
     if ((fd == 0) || ((fp = getFDptr(fd)) == NULL) || (fp->refNum == 0)) {
         *ERRNO = EBADF;
@@ -259,7 +259,7 @@ int KERNlstat(int *ERRNO, struct stat *s_buf, const char *filename) {
     int rc;
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: lstat(\"%s\", %p)\r\n", PROC->flpid, filename ? filename : "<null>", s_buf);
+        kern_printf("%u: lstat(\"%s\", %06lx)\r\n", PROC->flpid, filename ? filename : "<null>", (unsigned long)s_buf);
 
     rc = statCommon(filename, s_buf);
     if (rc)
@@ -271,7 +271,7 @@ int KERNstat(int *ERRNO, struct stat *s_buf, const char *filename) {
     int rc;
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: stat(\"%s\", %p)\r\n", PROC->flpid, filename ? filename : "<null>", s_buf);
+        kern_printf("%u: stat(\"%s\", %06lx)\r\n", PROC->flpid, filename ? filename : "<null>", (unsigned long)s_buf);
 
     rc = statCommon(filename, s_buf);
     if (rc)

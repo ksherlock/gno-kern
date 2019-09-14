@@ -37,7 +37,6 @@ segment "KERN2     ";
 #include "kvm.h"
 #include "proc.h"
 
-
 extern kernelStructPtr kp;
 
 /* signal context record */
@@ -567,7 +566,7 @@ int KERNtimes(int *ERRNO, struct tms *buffer) {
        buffer->tms_stime = buffer->tms_cstime = 0l;  */
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: times(%p)\r\n", PROC->flpid, buffer);
+        kern_printf("%u: times(%06lx)\r\n", PROC->flpid, (unsigned long)buffer);
 
     buffer->tms_utime = PROC->ticks;
     buffer->tms_cutime = PROC->childTicks;
@@ -751,7 +750,7 @@ int KERNfork(int *ERRNO, void *subr) {
     word nargs = 0;
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: fork(%p)\r\n", PROC->flpid, subr);
+        kern_printf("%u: fork(%06lx)\r\n", PROC->flpid, (unsigned long)subr);
 
     return commonFork((void *)subr, 1024, 0, NULL, &nargs, ERRNO);
 }
@@ -760,8 +759,9 @@ pascal int KERNfork2(void (*funcptr)(void), word stackSize, int prio, char *name
                      word *argv, int *ERRNO) {
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: fork2(%p, %u, %d, \"%s\", %p)\r\n",
-            PROC->flpid, funcptr, stackSize, prio, name ? name : "<null>", argv);
+        kern_printf("%u: fork2(%06lx, %u, %d, \"%s\", %06lx)\r\n",
+            PROC->flpid, (unsigned long)funcptr, stackSize, prio,
+            name ? name : "<null>", (unsigned long)argv);
 
     return commonFork(funcptr, stackSize, prio, name, argv, ERRNO);
 }
@@ -1104,7 +1104,7 @@ struct kvmt *KERNkvm_open(int *ERRNO) {
 SYSCALL KERNkvm_close(int *ERRNO, struct kvmt *k) {
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: kvm_close(%p)\r\n", PROC->flpid, k);
+        kern_printf("%u: kvm_close(%06lx)\r\n", PROC->flpid, (unsigned long)k);
 
     if (kfree(k))
         return SYSERR;
@@ -1115,7 +1115,7 @@ struct pentry *KERNkvmgetproc(int *ERRNO, int pid, struct kvmt *kd) {
     int mpid;
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: kvm_get_proc(%p, %d)\r\n", PROC->flpid, kd, pid);
+        kern_printf("%u: kvm_get_proc(%06lx, %d)\r\n", PROC->flpid, (unsigned long)kd, pid);
 
 
     mpid = mapPID(pid);
@@ -1134,7 +1134,7 @@ struct pentry *KERNkvmnextproc(int *ERRNO, struct kvmt *kd) {
     int mpid;
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: kvm_next_proc(%p)\r\n", PROC->flpid, kd);
+        kern_printf("%u: kvm_next_proc(%06lx)\r\n", PROC->flpid, (unsigned long)kd);
 
 
     if (kd->procIndex < NPROC) {
@@ -1157,7 +1157,7 @@ int KERNkvmsetproc(int *ERRNO, struct kvmt *kd) {
     int i;
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: kvm_set_proc(%p)\r\n", PROC->flpid, kd);
+        kern_printf("%u: kvm_set_proc(%06lx)\r\n", PROC->flpid, (unsigned long)kd);
 
     for (i = 0; i < NPROC; i++)
         if (kp->procTable[i].processState != procUNUSED) {
@@ -1314,7 +1314,7 @@ void *KERNsetsystemvector(void *execvec) {
 
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: set_system_vector(%p)\r\n", PROC->flpid, execvec);
+        kern_printf("%u: set_system_vector(%06lx)\r\n", PROC->flpid, (unsigned long)execvec);
 
     x = PROC->executeHook;
     PROC->executeHook = execvec;
@@ -1351,7 +1351,7 @@ int KERNpipe(int *ERRNO, int filedes[2])
     extern void disposePipe(int);
 
     if (kp->gsosDebug & 16)
-        kern_printf("%u: pipe(%p)\r\n", PROC->flpid, filedes);
+        kern_printf("%u: pipe(%06lx)\r\n", PROC->flpid, (unsigned long)filedes);
     /* $$$  ft = kp->procTable[Kgetpid()].openFiles; */
     pipen = newPipe();
     pread = allocFD(&fdread);

@@ -531,7 +531,7 @@ int KERNwait(int *ERRNO, union wait *stat) {
 
 
     if (kp->gsosDebug & 8)
-        kern_printf("%u: wait(%p)\r\n", PROC->flpid, stat);
+        kern_printf("%u: wait(%06lx)\r\n", PROC->flpid, (unsigned long)stat);
 
     disableps();
     for (i = 0; i < NPROC; i++) {
@@ -747,7 +747,7 @@ void *Ksignal(int *ERRNO, void (*func)(void), int sig) {
     struct sigrec *siginf;
 
     if (kp->gsosDebug & 8)
-        kern_printf("%u: signal(%d, %p)\r\n", PROC->flpid, sig, func);
+        kern_printf("%u: signal(%d, %06lx)\r\n", PROC->flpid, sig, (unsigned long)func);
 
     if (sig < 1 || sig >= NSIG) {
         *ERRNO = EINVAL;
