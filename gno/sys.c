@@ -583,18 +583,13 @@ int KERNtimes(int *ERRNO, struct tms *buffer) {
 }
 
 #pragma toolparms 0
-char *a_strncpy_max(char *s, word max_len) {
-    word l;
-    char *x;
 
-    if (s == NULL)
-        return NULL;
-    while ((l < max_len) && (s[l] != 0))
-        l++;
-    x = malloc(l + 1);
-    strncpy(x, s, l);
-    x[l] = 0;
-    return x;
+static unsigned gno_strnlen(const char *cp, unsigned max) {
+    unsigned i;
+    for (i = 0; i < max; ++i) {
+        if (cp[i] == 0) break;
+    }
+    return i;
 }
 
 int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
@@ -651,11 +646,15 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
     child->irq_X = child->irq_Y = 0;
     child->userID = newID;
     if (name != NULL) {
-        name = a_strncpy_max(name, 128);
-        child->args = malloc(strlen(name) + 9);
-        strcpy(child->args, "BYTEWRKS");
-        strcat(child->args, name);
-        nfree(name);
+        char *cp;
+        unsigned n = gno_strnlen(name, 128);
+        cp = malloc(n + 9);
+        if (cp) {
+            memcpy(cp, "BYTEWRKS", 8);
+            memcpy(cp + 8, name, n);
+            cp[n + 8] = 0;
+        }
+        child->args = cp;
     } else
         child->args = NULL;
 
