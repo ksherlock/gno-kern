@@ -20,6 +20,7 @@ segment "KERN2     ";
 
 
 #include "gno.h"
+#include "kernel.h"
 #include "proc.h"
 #include "sem.h"
 #include "sys.h"
@@ -454,18 +455,54 @@ endGNO:
 
 #include <stdarg.h>
 /* turn off debug 25 and on debug 8 for vararg function */
-#pragma debug 0
+#pragma debug 0x8000
 #pragma optimize 79
 #define KP_BUFSIZ 256
+
+
 int kern_printf(const char *format, ...) {
     static char buffer[KP_BUFSIZ];
     va_list list;
     int ret;
 
     va_start(list, format);
+    disableps();
     ret = vsnprintf(buffer, KP_BUFSIZ, format, list);
-
+#ifdef GSPLUS_DEBUGGER
+    /* clang-format: off */
+    asm {
+        lda #0x0000
+        ldx #buffer
+        ldy #^buffer
+        dcb 0x42
+        dcb 0xa0
+    }
+    /* clang-format: on */
+    enableps()
+#else
+    enableps()
     WriteCString(buffer);
+#endif
     va_end(list);
     return ret;
 }
+
+
+void kern_print(const char *str) {
+
+#ifdef GSPLUS_DEBUGGER
+    /* clang-format: off */
+    asm {
+        lda #0x0000
+        ldx str
+        ldy str+2
+        dcb 0x42
+        dcb 0xa0
+    }
+    /* clang-format: on */
+#else
+    WriteCString(str);
+#endif
+}
+
+

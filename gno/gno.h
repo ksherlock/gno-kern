@@ -17,7 +17,8 @@ extern pascal int   kernVersion(void) inline(0x0403, udispatch);
 extern pascal int   kernStatus(void) inline(0x0603, udispatch);
 
 
-int kern_printf(const char *, ...);
+extern int kern_printf(const char *, ...);
+extern void kern_print(const char *);
 
 int KERNexecve(int *ERRNO, char *cmdline, char *filename);
 int Kscreate(int *ERRNO, int count);
