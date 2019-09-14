@@ -141,6 +141,9 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     int i, j, mpid;
     word ClosePB[2];
     union wait status;
+    __SIG_FUNC__ sigfunc;
+
+
     extern int OLDGSOSST(word callnum, void *pBlock);
     extern void ctxtRestore(void);
     extern void enableBuf(void);
@@ -181,6 +184,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     }
     if (!signum)
         return 0;
+
     tosig = &(kp->procTable[mpid]);
     sig = tosig->siginfo;
     disableps();
@@ -197,12 +201,14 @@ int KERNkill(int *ERRNO, int signum, int pid) {
         return 0;
     }
 
+    sigfunc = sig->v_signal[signum];
+
     /* if we were BLOCKED, then restart the operation */
     if (tosig->processState == procBLOCKED) {
 #if 1
         /* if (sig interrupt bit is set) */
-        if ((sig->v_signal[signum] != SIG_DFL) &&
-            (sig->v_signal[signum] != SIG_IGN)) {
+        if ((sigfunc != SIG_DFL) &&
+            (sigfunc != SIG_IGN)) {
             tosig->waitdone = -1;
             tosig->processState = procREADY;
         }
@@ -224,17 +230,17 @@ int KERNkill(int *ERRNO, int signum, int pid) {
         tosig->processState = procREADY;
     else if (tosig->processState == procWAITSIGCH) {
         /* procWAITSIGCH/SIGCHILD previously checked */
-            if (sig->v_signal[signum] != SIG_DFL)
+        if (sigfunc != SIG_DFL)
                 tosig->waitdone = -1;
 
         tosig->processState = procREADY; /* restart the process, bloke! */
     }
 
     /* ignore the signal? */
-    if (sig->v_signal[signum] == SIG_IGN) {
+    if (sigfunc == SIG_IGN) {
         enableps();
         return 0;
-    } else if (sig->v_signal[signum] == SIG_DFL) { /* default actions */
+    } else if (sigfunc == SIG_DFL) { /* default actions */
         switch (signum) {
         case SIGCONT:
             if (tosig->processState != procSUSPENDED) {
@@ -416,7 +422,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
         sig->signalmask |= sigmask(signum); /* block the signal */
         tmpwaitdone = tosig->waitdone;
         enableps();
-        (*sig->v_signal[signum])(signum, 0);
+        (*sigfunc)(signum, 0);
         tosig->waitdone = tmpwaitdone;
         Ksigsetmask(ERRNO, sig->signalmask & ~sigmask(signum));
         return 0;
@@ -472,15 +478,15 @@ int KERNkill(int *ERRNO, int signum, int pid) {
         /* a->i1 = a->i2 = b BROKEN in C 2.0.3 */
 #if 0
        tosig->irq_B = tosig->irq_B1 =
-           tosig->irq_K = (sig->v_signal[signum] >> 16);
+           tosig->irq_K = (sigfunc >> 16);
 #else
-        tosig->irq_K = ((unsigned long)sig->v_signal[signum]) >> 16;
+        tosig->irq_K = ((unsigned long)sigfunc) >> 16;
         tosig->irq_B1 = tosig->irq_K;
         tosig->irq_B = tosig->irq_B1;
 #endif
 
         /* the PC field isn't used right now. fix it */
-        tosig->irq_PC = (word)sig->v_signal[signum];
+        tosig->irq_PC = (word)sigfunc;
         tosig->irq_P = 0x04; /* leave interrupts off you idiot */
 
         /* this RTI info simulation goes away at the next context switch,
