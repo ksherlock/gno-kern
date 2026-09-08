@@ -123,8 +123,12 @@ void semINTR(int sem, int mpid) {
 SYSCALL Kscreate(int *ERRNO, int count) {
     int sem;
 
+    if (count < 0) {
+        *ERRNO = EINVAL;
+        return SYSERR;
+    }
     disableps();
-    if (count < 0 || (sem = newsem()) == SYSERR) {
+    if ((sem = newsem()) == SYSERR) {
         enableps();
         *ERRNO = ENOMEM;
         return SYSERR;
