@@ -51,6 +51,7 @@ union wait {
 typedef struct chldInfo {
    struct chldInfo *next;
    int pid;                     /* pid of terminated process */
+   int pgrp;                    /* pgrp of terminated process */
    union wait status;           /* exit status of terminated process */
 } chldInfo, *chldInfoPtr;
 

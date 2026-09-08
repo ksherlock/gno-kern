@@ -59,28 +59,42 @@ extern void selwait(void);
 extern void k_remove(unsigned long vec, int pid, int readyq);
 
 
-void enqueueWait(int targetpid, int pid, union wait status) {
-    chldInfoPtr walk;
+void enqueueWait(int targetpid, int pid, int pgrp, union wait status) {
+
     chldInfoPtr nwait;
+    chldInfoPtr prev;
+
 
     /*  printf("enqueueWait: tpid %d pid %d status
      * %04X\n",targetpid,pid,status);
      */
     if (targetpid == 0)
         return; /* don't queue up for Null Process */
+
+
+    nwait = NULL;
+    prev = NULL;
+    nwait = kp->procTable[targetpid].waitq;
+    while (nwait) {
+
+        /* overwrite previous status */
+        if (nwait->pid == pid) {
+            nwait->pgrp = pgrp;
+            nwait->status = status;
+            return;
+        }
+        prev = nwait;
+        nwait = nwait->next;
+    }
+
     nwait = malloc(sizeof(chldInfo));
     nwait->next = NULL;
     nwait->pid = pid;
+    nwait->pgrp = pgrp;
     nwait->status = status;
 
-    walk = kp->procTable[targetpid].waitq;
-    if (walk == NULL) {
-        kp->procTable[targetpid].waitq = nwait;
-        return;
-    }
-    while (walk->next != NULL)
-        walk = walk->next;
-    walk->next = nwait;
+    if (prev) prev->next = nwait;
+    else kp->procTable[targetpid].waitq = nwait;
 }
 
 word numInWaitQueue(int pid) {
@@ -271,7 +285,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
             if (tosig->processState != procSUSPENDED) {
                 status.w_stopsig = signum;
                 status.w_stopval = WSTOPPED;
-                enqueueWait(tosig->parentpid, pid, status);
+                enqueueWait(tosig->parentpid, pid, tosig->pgrp, status);
                 /* this seems to be a definite no-no; the parent will restart on
                 receipt of the SIGCHLD */
                 /*  kp->procTable[tosig->parentpid].processState = procREADY; */
@@ -302,7 +316,8 @@ int KERNkill(int *ERRNO, int signum, int pid) {
                 status.w_coredump = 0;
                 status.w_retcode = 0;
             }
-            enqueueWait(tosig->parentpid, pid, status);
+
+            enqueueWait(tosig->parentpid, pid, tosig->pgrp, status);
             addsig(tosig->parentpid, SIGCHLD);
             /* update children time accounting stuff for times() */
             if (tosig->parentpid)
