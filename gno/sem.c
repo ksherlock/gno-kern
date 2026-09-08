@@ -70,7 +70,7 @@ void _seminit(void) {
 /* make current process wait on a semaphore */
 SYSCALL commonSwait(int *ERRNO, int sem, int blockas, int waitdone) {
     struct sentry *sptr;
-    struct pentry *pptr;
+    // struct pentry *pptr;
 
     if (blockas != procBLOCKED)
         PANIC("commonSwait() only supports procBLOCKED now");

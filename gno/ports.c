@@ -57,7 +57,7 @@ SYSCALL pinit(int maxmsgs) {
  *	pcreate - create a port that allows "count" outstanding messages
  */
 pascal SYSCALL KERNpcreate(int count, int *ERRNO) {
-    int ps;
+    // int ps;
     int i, p;
     struct pt *ptptr;
 
@@ -111,7 +111,7 @@ pascal SYSCALL KERNpcreate(int count, int *ERRNO) {
  */
 
 pascal SYSCALL KERNpsend(int portid, long int msg, int *ERRNO) {
-    int ps;
+    // int ps;
     struct pt *ptptr;
     int seq;
     struct ptnode *freenode;
@@ -165,7 +165,7 @@ pascal SYSCALL KERNpsend(int portid, long int msg, int *ERRNO) {
  */
 
 pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
-    int ps;
+    // int ps;
     struct pt *ptptr;
     int seq;
     long int msg;
@@ -260,7 +260,7 @@ static void _ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
  */
 
 pascal SYSCALL KERNpdelete(int portid, int (*dispose)(long int), int *ERRNO) {
-    int ps;
+    // int ps;
     struct pt *ptptr;
 
     if (kp->gsosDebug & 16)
@@ -287,7 +287,7 @@ pascal SYSCALL KERNpdelete(int portid, int (*dispose)(long int), int *ERRNO) {
  */
 
 pascal SYSCALL KERNpreset(int portid, int (*dispose)(long int), int *ERRNO) {
-    int ps;
+    // int ps;
     struct pt *ptptr;
 
     if (kp->gsosDebug & 16)
@@ -332,7 +332,7 @@ pascal SYSCALL KERNpbind(int portid, char *name, int *ERRNO) {
 }
 
 pascal SYSCALL KERNpgetport(char *name, int *ERRNO) {
-    struct pt *ptptr;
+    // struct pt *ptptr;
     unsigned i;
 
     if (kp->gsosDebug & 16)

@@ -184,7 +184,7 @@ int cl[2];
 
 int upToDate(ffentryPtr p) {
     FileInfoRecGS f;
-    word dateBuf[8];
+    // word dateBuf[8];
 
     if (p->flags & 0x8000) {
         f.pCount = 7;
@@ -210,9 +210,9 @@ void ffErr(int err) { /*   fprintf(stderr,"FastFile error: %04X\n",err); */ }
 
 handle loadFile(GSString255Ptr pathGS, ffentryPtr p) {
     handle fileHandle;
-    word dateBuf[8];
-    char asciiBuf[30];
-    longword secs;
+    // word dateBuf[8];
+    // char asciiBuf[30];
+    // longword secs;
     int err;
 
     p->hidden = 1;
@@ -289,11 +289,13 @@ handle loadFile(GSString255Ptr pathGS, ffentryPtr p) {
 int fastEntry(FastFilePB *ff, int osFlag, int pCount) {
     my_FastFileGSPB *fg = (my_FastFileGSPB *)ff;
     ffentryPtr p;
-    handle fileHandle, tmpHandle;
+    handle fileHandle;
+    // handle tmpHandle;
     GSString255Ptr pathCopy;
     ResultBuf255Ptr epRes;
-    int tmp, err;
-    char *tmps;
+    // int tmp;
+    int err;
+    // char *tmps;
     int dateBuf[4];
     extern void printGS(GSString255Ptr path);
 

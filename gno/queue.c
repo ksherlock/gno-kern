@@ -33,7 +33,8 @@ void initQ(void) {
 }
 
 int Qalloc(void) {
-    struct qstruct *newfree, *newQ;
+    // struct qstruct *newfree;
+    struct qstruct *newQ;
 
     if (!q_free)
         PANIC("Qalloc failed - ran out of free Q entries");

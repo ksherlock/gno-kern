@@ -142,8 +142,8 @@ static void setuppty(void) {
     char tty[] = ".ttyq0";
     const char conv[] = "0123456789abcdef";
     unsigned int ptyno, slotno;
-    extern PTYMastHeader;
-    extern PTYSlaveHeader;
+    extern struct DeviceHeader PTYMastHeader;
+    extern struct DeviceHeader PTYSlaveHeader;
 
     slotno = 6;
     for (ptyno = 0; ptyno < 16; ptyno++) {
@@ -166,7 +166,7 @@ static void setuptty(void) {
     static GSString255 filename;
     int devNum;
     static char devname[20];
-    extern ConsoleHeader;
+    extern struct DeviceHeader ConsoleHeader;
 
     numDrivers = 0;
 
@@ -216,8 +216,7 @@ int main(int argc, char *argv) {
     extern void NullProcess(void);
     extern void test(void);
     extern void ROUTINE5(void);
-    extern CKernData;
-    extern TEXTTOOLSINFO;
+    extern procState CKernData;
     extern void TESTPROC(void);
     extern void init_htable(void);
     extern void initPTY(void);
@@ -225,19 +224,20 @@ int main(int argc, char *argv) {
     extern void GetDaMouseMod(void);
     extern void InOutStart(void);
     extern void InOutEnd(void);
-    int newPID, stat;
-    handle fstack;
-    extern kernTable[];
+    // int newPID;
+    int stat;
+    // handle fstack;
+    extern unsigned long kernTable[];
     ResultBuf255Ptr p0;
     GSString255Ptr sysRpath;
     struct pentry *p;
     word state;
     byte slot, statereg;
     int i;
-    char *kptr;
-    GSString255Ptr *pfxRec;
+    // char *kptr;
+    // GSString255Ptr *pfxRec;
     handle emdp;
-    extern snooperInfo;
+    extern struct SnooperInfo snooperInfo;
     word nargs = 0;
 
     TextStartUp();

@@ -65,7 +65,7 @@ void printGS(Gstr path) {
 }
 
 static unsigned long hashpjw(Gstr s, unsigned short leng) {
-    char *p;
+    // char *p;
     unsigned long h = 0, g;
     unsigned short i;
 
@@ -84,7 +84,7 @@ void init_htable(void) {
     Gstr p, map;
     unsigned short hent;
     unsigned short i;
-    short x;
+    // short x;
     char *line, *pt, *pt1;
 
     for (i = 0; i < NUM_NP; i++) {

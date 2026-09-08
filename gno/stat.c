@@ -99,7 +99,8 @@ extern int findDevice(GSString255Ptr);
 int statCommon(const char *filename, struct stat *s_buf) {
     FileInfoRecGS fi;
     DevNumRecGS getdev;
-    int e, entcount;
+    int e;
+    // int entcount;
     int dtype = 0;
     GSString255Ptr fullpath, path;
     extern void COPYC2GS(void *, void *);

@@ -37,6 +37,10 @@ segment "KERN2     ";
 #include "kvm.h"
 #include "proc.h"
 
+
+extern void IncRefnum(int, int);
+extern void incPipe(int, int);
+
 extern kernelStructPtr kp;
 
 /* signal context record */
@@ -94,7 +98,7 @@ typedef struct ttyInfo {
     word pgrp;
 } ttyInfo;
 
-extern ttyStruct;
+extern int ttyStruct[];
 ttyInfo *ttys = (ttyInfo *)&ttyStruct;
 
 #define isbadpgrp(p) ((p < 0) || (p >= NPGRP))
@@ -159,7 +163,7 @@ void *pmalloc(size_t size, word p_uid) {
 int kfree(void *mem) {
     handle h;
 
-    if (h = (FindHandle(mem) == NULL))
+    if ((h = (FindHandle(mem))) == NULL)
         return SYSERR;
     DisposeHandle(h);
     return (OK);
@@ -250,7 +254,7 @@ unsigned x;
 fdentryPtr allocFD(int *fdn) {
     fdtablePtr ft;
     int i, j;
-    unsigned s;
+    // unsigned s;
 
     /* $$$ ft = kp->procTable[Kgetpid()].openFiles; */
     ft = PROC->openFiles;
@@ -379,6 +383,7 @@ pascal int KERNSetGNOQuitRec(word pCount, GSString255Ptr pathname, word flags,
     quitParms.pCount = pCount;
     quitParms.pathname = pathname;
     quitParms.flags = flags;
+    return 0;
 }
 
 int KERNgetpid(void)
@@ -595,7 +600,7 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
                word *argv, int *ERRNO) {
     word dPageAddr, buffSize, nargs;
     int newID, newPID, parentPID;
-    int flpid;
+    // int flpid;
     longword *ret;
     handle fstack;
     struct pentry *parent, *child;
@@ -604,8 +609,6 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
     int i, j, k;
     extern void endproc2(void);
     extern void FORKInitGlob(void);
-    extern void IncRefnum(int, int);
-    extern void incPipe(int, int);
     extern int allocPID(void);
 
     newID = GetNewID(0x1000);
@@ -799,7 +802,7 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
     int i, j;
     struct pentry *p;
     ExpandPathRecGS ep;
-    PrefixRecGS sp;
+    // PrefixRecGS sp;
     FileInfoRecGS fi;
     int ssf = 0, restart, force_norest = 0;
     word oldUserID, oldFlags, newStack;
@@ -1081,6 +1084,8 @@ int KERNexecve(int *ERRNO, char *cmdline, char *filename) {
         /* don't use any local variables beyond this point */
     }
     asm { jmp >execveHook }
+
+    return 0;
 }
 
 /* open the kernel to access the process structures */
@@ -1210,7 +1215,8 @@ int KERNtcnewpgrp(int *ERRNO, int fdtty) {
 }
 
 int KERNsettpgrp(int *ERRNO, int fdtty) {
-    int p, pid = Kgetpid();
+    int p;
+    // int pid = Kgetpid();
     int pp, devNum;
     fdentryPtr tty;
     extern fdentryPtr getFDptr(int);
@@ -1252,6 +1258,8 @@ int KERNsettpgrp(int *ERRNO, int fdtty) {
                 PROC->flpid, pp, p);
 
     enableps();
+
+    return 0;
 }
 
 int KERNtctpgrp(int *ERRNO, int pid, int fdtty) {
@@ -1294,6 +1302,8 @@ int KERNtctpgrp(int *ERRNO, int pid, int fdtty) {
         kern_printf("tctpgrp TTY: %d pid: %d pgrp: %d\r\n", devNum, pid, p);
     ttys[devNum].pgrp = p;
     enableps();
+
+    return 0;
 }
 
 int KERNsetdebug(int code) {
@@ -1402,8 +1412,8 @@ int KERNdup(int *ERRNO, int filedes) {
     fdtablePtr ft;
     fdentryPtr newFD, oldFD;
     int nfd;
-    int i, j, fd;
-    extern void IncRefnum(int, int);
+    // int i, j;
+    int fd;
 
     if (kp->gsosDebug & 16)
         kern_printf("%u: dup(%d)\r\n", PROC->flpid, filedes);
@@ -1440,8 +1450,8 @@ int KERNdup2(int *ERRNO, int filedes2, int filedes) {
     /* $$$ struct pentry *p; */
     fdtablePtr ft;
     fdentryPtr newFD, oldFD;
-    int i, j, fd, fd2;
-    extern void IncRefnum(int, int);
+    // int i, j;
+    int fd, fd2;
     int cl[2];
 
     if (kp->gsosDebug & 16)

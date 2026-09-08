@@ -160,7 +160,8 @@ pascal int KERNsocket(int domain, int type, int protocol, int *ERRNO) {
 }
 
 pascal int KERNbind(int fd, struct sockaddr *my_addr, int addrlen, int *ERRNO) {
-    int err, sock;
+    // int err;
+    int sock;
 
     if ((sock = getsocknum(fd)) < 0) {
         *ERRNO = -sock;

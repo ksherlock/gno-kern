@@ -138,7 +138,8 @@ static void proc_free(struct pentry *tosig) {
 int KERNkill(int *ERRNO, int signum, int pid) {
     struct pentry *tosig;
     struct sigrec *sig;
-    int i, j, mpid;
+    int i, mpid;
+    // int j;
     word ClosePB[2];
     union wait status;
     __SIG_FUNC__ sigfunc;

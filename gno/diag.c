@@ -43,7 +43,7 @@ void traceback(word stack) {
 }
 
 void PRINTBRK(word stack, struct intState *p) {
-    int pid;
+    // int pid;
     struct pentry *pr;
 
     pr = &(kp->procTable[Kgetpid()]);
