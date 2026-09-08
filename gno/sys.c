@@ -101,7 +101,6 @@ typedef struct ttyInfo {
 extern int ttyStruct[];
 ttyInfo *ttys = (ttyInfo *)&ttyStruct;
 
-#define isbadpgrp(p) ((p < 0) || (p >= NPGRP))
 
 static word hiWord(longword w) {
     word h;
@@ -435,8 +434,8 @@ int KERNsetpgrp(int *ERRNO, int pgrp, int pid) {
         *ERRNO = ESRCH;
         return -1;
     }
-    if (isbadpgrp(pgrp)) {
-        *ERRNO = ESRCH;
+    if (pgrp < 2 || pgrp >= 34) {
+        *ERRNO = EINVAL;
         return -1;
     }
     disableps();
