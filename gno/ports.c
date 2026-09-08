@@ -64,8 +64,10 @@ pascal SYSCALL KERNpcreate(int count, int *ERRNO) {
     if (kp->gsosDebug & 16)
         kern_printf("%u: pcreate(%d)\r\n", PROC->flpid, count);
 
-    if (count < 0)
+    if (count < 0) {
+        *ERRNO = EINVAL;
         return SYSERR;
+    }
     disableps();
     for (i = 0; i < NPORTS; i++) {
         if ((p = ptnextp--) < 0)
@@ -88,7 +90,7 @@ pascal SYSCALL KERNpcreate(int count, int *ERRNO) {
             }
             /* a->i1 = a->i2 = b BROKEN in C 2.0.3 */
 #if 0
-	    ptptr->pthead = ptptr->pttail = NULL;
+            ptptr->pthead = ptptr->pttail = NULL;
 #else
             ptptr->pthead = NULL;
             ptptr->pttail = NULL;
@@ -120,18 +122,19 @@ pascal SYSCALL KERNpsend(int portid, long int msg, int *ERRNO) {
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     /* wait for space and verify port is still allocated */
     seq = ptptr->ptseq;
-    if (commonSwait(ERRNO, ptptr->ptssem, procBLOCKED, BLOCKED_PRECEIVE) ==
-        SYSERR) {
+    if (commonSwait(ERRNO, ptptr->ptssem, procBLOCKED, BLOCKED_PRECEIVE) == SYSERR) {
         enableps();
         /* *ERRNO set in commonSwait() */
         return SYSERR;
     }
     if (ptptr->ptstate != PTALLOC || ptptr->ptseq != seq) {
         enableps();
+        *ERRNO = EINVAL; /* correct error? */
         return SYSERR;
     }
     if (ptfree == NULL)
@@ -143,7 +146,7 @@ pascal SYSCALL KERNpsend(int portid, long int msg, int *ERRNO) {
     if (ptptr->pttail == NULL) {
         /* a->i1 = a->i2 = b BROKEN in C 2.0.3 */
 #if 0
-	ptptr->pthead = ptptr->pttail = freenode;
+        ptptr->pthead = ptptr->pttail = freenode;
 #else
         ptptr->pthead = freenode;
         ptptr->pttail = freenode;
@@ -174,6 +177,7 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     /* wait for message and verify that the port is still allocated */
@@ -187,6 +191,7 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
     }
     if (ptptr->ptstate != PTALLOC || ptptr->ptseq != seq) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     /* dequeue first message that is waiting in the port */
@@ -196,7 +201,7 @@ pascal long SYSCALL KERNpreceive(int portid, int *ERRNO) {
     if (ptptr->pthead == ptptr->pttail) { /* delete last item */
         /* a->i1 = a->i2 = b BROKEN in C 2.0.3 */
 #if 0
-	ptptr->pthead = ptptr->pttail = NULL;
+        ptptr->pthead = ptptr->pttail = NULL;
 #else
         ptptr->pthead = NULL;
         ptptr->pttail = NULL;
@@ -233,7 +238,7 @@ static void _ptclear(struct pt *ptptr, int newstate, int (*dispose)(long int)) {
     if (newstate == PTALLOC) {
         /* a->i1 = a->i2 = b BROKEN in C 2.0.3 */
 #if 0
-	ptptr->pthead = ptptr->pttail = NULL;
+        ptptr->pthead = ptptr->pttail = NULL;
 #else
         ptptr->pthead = NULL;
         ptptr->pttail = NULL;
@@ -264,6 +269,7 @@ pascal SYSCALL KERNpdelete(int portid, int (*dispose)(long int), int *ERRNO) {
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     _ptclear(ptptr, PTFREE, dispose);
@@ -290,6 +296,7 @@ pascal SYSCALL KERNpreset(int portid, int (*dispose)(long int), int *ERRNO) {
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     _ptclear(ptptr, PTALLOC, dispose);
@@ -310,10 +317,12 @@ pascal SYSCALL KERNpbind(int portid, char *name, int *ERRNO) {
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     if (ptptr->ptname != PTUNNAMED) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
     ptptr->ptname = malloc(33);
@@ -337,6 +346,7 @@ pascal SYSCALL KERNpgetport(char *name, int *ERRNO) {
             return i;
         }
     enableps();
+    *ERRNO = ENOENT; /* proper error? */
     return SYSERR;
 }
 
@@ -350,10 +360,20 @@ pascal SYSCALL KERNpgetcount(int portid, int *ERRNO) {
     disableps();
     if (isbadport(portid) || (ptptr = &ports[portid])->ptstate != PTALLOC) {
         enableps();
+        *ERRNO = EINVAL;
         return SYSERR;
     }
+
+
+    /* Kscount will only return an error if the semaphore
+       is invalid and if it's invalid we have bigger problems than ignoring
+       the error that shouldn't happen.
+     */
+    
     c = Kscount(ERRNO, ptptr->ptssem);
-    d = (c == SYSERR) ? ptptr->ptmaxcnt : ptptr->ptmaxcnt - c;
+    d = (c <= 0) ? ptptr->ptmaxcnt : ptptr->ptmaxcnt - c;
+
+
     enableps();
     return d;
 }
