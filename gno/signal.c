@@ -288,7 +288,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
     else if (tosig->processState == procWAITSIGCH) {
         /* procWAITSIGCH/SIGCHILD previously checked */
         if (sigfunc != SIG_DFL)
-                tosig->waitdone = -1;
+            tosig->waitdone = -1;
 
         tosig->processState = procREADY; /* restart the process, bloke! */
     }
@@ -342,7 +342,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
         }
 
         /* this is the old 'kill' code
-           This portion is repsponsible for terminating processes
+           This portion is responsible for terminating processes
         */
 
         /*printf("kill (-%d):pid %d (userID %04X)",signum,pid,tosig->userID);*/
@@ -411,8 +411,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
             ClosePB[0] = 1;
             ClosePB[1] = 0;
             CloseGS(ClosePB);
-            nfree(
-                tosig->openFiles); /* since we alloc'ed this- fix this later */
+            nfree(tosig->openFiles); /* since we alloc'ed this- fix this later */
             tosig->processState = procUNUSED;
 
             /*
@@ -463,8 +462,7 @@ int KERNkill(int *ERRNO, int signum, int pid) {
             PROC->openFiles = tmpof;
             tosig->processState = procUNUSED;
 
-            nfree(
-                tosig->openFiles); /* since we alloc'ed this- fix this later */
+            nfree(tosig->openFiles); /* since we alloc'ed this- fix this later */
             break;
         }
         }
@@ -510,8 +508,8 @@ int KERNkill(int *ERRNO, int signum, int pid) {
 
         /* Interrupt select() */
 #if 0
-	/* selwakeup(1, mpid2KToff(mpid));
-	FIXME: why does this break init? */
+        /* selwakeup(1, mpid2KToff(mpid));
+        FIXME: why does this break init? */
 #else
         if (tosig->p_waitvec == (unsigned long)selwait)
             k_remove(tosig->p_waitvec, mpid, 1);
@@ -596,8 +594,8 @@ int KERNwait(int *ERRNO, union wait *stat) {
         }
     }
     if ((i == NPROC) && (PROC->waitq == NULL)) {
-        *ERRNO = ECHILD;
         enableps();
+        *ERRNO = ECHILD;
         return -1;
     }
 
@@ -672,22 +670,21 @@ int KERNsigpause(int *ERRNO, longword mask) {
 #pragma toolparms 0
 
 #if 0
-longword Kreceive(int *ERRNO)
-{
-longword tmp;
-struct pentry *p;
-extern void sleepbusy(void);
+longword Kreceive(int *ERRNO) {
+    longword tmp;
+    struct pentry *p;
+    extern void sleepbusy(void);
 
     disableps();
     p = PROC;
 
     p->waitdone = BLOCKED_RECEIVE;
     if (!(p->flags & FL_MSGRECVD)) {
-	p->processState = procBLOCKED;
+        p->processState = procBLOCKED;
         sleepbusy();
     }
     if (p->waitdone == BLOCKED_RECEIVE) {
-	tmp = p->msg;
+        tmp = p->msg;
         p->flags &= ~FL_MSGRECVD;
     }
     else tmp = -1l;
@@ -818,9 +815,9 @@ void *Ksignal(int *ERRNO, void (*func)(void), int sig) {
     /* $$$  siginf = kp->procTable[Kgetpid()].siginfo; */
     siginf = PROC->siginfo;
     old = siginf->v_signal[sig];
-        if (func == SIG_IGN)
-            siginf->sigpending &= ~sigmask(sig);
-        siginf->v_signal[sig] = func;
+    if (func == SIG_IGN)
+        siginf->sigpending &= ~sigmask(sig);
+    siginf->v_signal[sig] = func;
     return old;
 }
 
