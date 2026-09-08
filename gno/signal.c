@@ -109,6 +109,10 @@ word numInWaitQueue(int pid) {
     return x;
 }
 
+/*
+ * wait() documentation states that WSTOPPED entries are only returned
+ * when tracing is enabled.  this doesn't care (and can't since gsh depends on it)
+ */
 int dequeueWait(chldInfoPtr status, int pid) {
     chldInfoPtr item;
 
@@ -123,6 +127,60 @@ int dequeueWait(chldInfoPtr status, int pid) {
     nfree(item);
     return 0;
 }
+
+
+static int dequeue_wait_queue(int *stat_loc, int parent_pid, int pid, int pgrp, int options) {
+    chldInfoPtr item;
+    chldInfoPtr prev;
+    unsigned st;
+
+    item = kp->procTable[parent_pid].waitq;
+    prev = NULL;
+
+    for(; item; prev = item, item = item->next) {
+
+        if (pid && item->pid != pid) continue;
+        if (pgrp && item->pgrp != pgrp) continue;
+
+        st = item->status.w_status;
+
+        /*
+         * 0xffff - WCONTINUED signal (not yet implemented)
+         * (n.b. freebsd uses 00nn, where nn = SIGCONT)
+         * 0xnn7f - stopped due to signal nn
+         * 0xnn00 - normal exit, value = nn
+         * 0x00nn - abnormal exit, signal = nn (1-32)
+         * 0x01nn - "" "", with coredump.
+         */
+        #if defined(WCONTINUED)
+        if (st == 0xffff & !(options & WCONTINUED)) continue;
+        #endif
+        if ((st & 0xff) == WSTOPPED && !(options & WUNTRACED)) continue;
+
+        /* got a match! */
+        pid = item->pid;
+        if (stat_loc) *stat_loc = st;
+        if (prev) prev->next = item->next;
+        else kp->procTable[parent_pid].waitq = item->next;
+        nfree(item);
+        return pid;
+    }
+
+    if (options & WNOHANG) return 0;
+    return -1;
+}
+static void delete_wait_queue(int parent_pid) {
+    chldInfoPtr item;
+
+    item = kp->procTable[parent_pid].waitq;
+    while (item) {
+        chldInfoPtr next = item->next;
+        nfree(item);
+        item = next;
+    }
+    kp->procTable[parent_pid].waitq = NULL;
+}
+
 
 #pragma databank 1
 #pragma toolparms 1
@@ -624,6 +682,118 @@ int KERNwait(int *ERRNO, union wait *stat) {
     if (stat != NULL)
         *stat = waitinfo.status;
     return (waitinfo.pid);
+}
+
+
+/*
+ * minix (1,2) and xv6 put the child process into a zombie status and scan 
+ * the process table for waiting children.  for stopped/continued, there's a 
+ * PARENT_NOTIFIED flag so it only triggers once.
+ */
+pascal int KERNwaitpid(int pid, int *stat_loc, int options, int *ERRNO) {
+
+    chldInfoPtr info;
+    unsigned i;
+    int pgrp = 0;
+    int mypid = Kgetpid();
+    int rv;
+    int has_eligible_child;
+
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: waitpid(%d, %06lx, %u)\r\n", PROC->flpid, pid, (unsigned long)stat_loc, options);
+
+    if (options & ~(WNOHANG|WUNTRACED)) {
+        *ERRNO = EINVAL;
+        return -1;
+    }
+
+    /* pgrp/pid of 0 is a wildcard to allow anything */
+    if (pid == 0) {
+        pgrp = PROC->pgrp;
+        pid = 0;
+    } else if (pid == -1) {
+        pgrp = 0;
+        pid = 0;
+    } else if (pid < -1) {
+        pgrp = -pid;
+        pid = 0;
+    }
+
+    if (pgrp && (pgrp < 2 || pgrp >= 34)) {
+        *ERRNO = ECHILD;
+        return -1;
+    }
+    /* WNOHANG returns ECHILD if there are no children matching the pid/pgrp.*/
+    /* This should also cover cases where
+     * - pid does not exist
+     * - pid is not my child
+     * - no children in process group
+     */
+
+    disableps();
+
+    has_eligible_child = 0;
+    for (info = PROC->waitq ; info; info = info->next) {
+        if (pid && info->pid != pid) continue;
+        if (pgrp && info->pgrp != pgrp) continue;
+        has_eligible_child = 1;
+        break;
+    }
+
+    if (!has_eligible_child) {
+        procStatePtr p;
+
+        p = kp->procTable;
+        for (i = 0; i < NPROC; ++i, ++p) {
+            if (!p->processState) continue;
+            if (p->parentpid != mypid) continue;
+            if (pgrp && p->pgrp != pgrp) continue;
+            if (pid && p->flpid != pid) continue;
+            has_eligible_child = 1;
+            break;
+        }
+    }
+
+    if (!has_eligible_child) {
+        enableps();
+        *ERRNO = ECHILD;
+        return -1;
+    }
+
+    for(;;) {
+        rv = dequeue_wait_queue(stat_loc, mypid, pid, pgrp, options);
+        if (rv >= 0) break;
+
+        PROC->waitdone = 0;
+
+        /* WAITSIGCH returns when a SIGCHLD or caught signal is sent
+           to the process */
+
+        PROC->processState = procWAITSIGCH;
+        enableps();
+        _resched();
+        if (PROC->waitdone == -1) {
+            /* interrupted by a caught signal */
+            *ERRNO = EINTR;
+            return -1;
+        }
+        disableps();
+    }
+
+    /* clear any pending SIGCHILD signals if the waitq is empty */
+    /*
+       Otherwise, if SIGCHLD is blocked, if wait() or waitpid() return because
+       the status of a child process is available, any pending SIGCHLD signal
+       shall be cleared unless the status of another child process is
+       available.
+     */
+    if (rv && PROC->waitq == 0 && PROC->siginfo->signalmask & sigmask(SIGCHLD)) {
+        PROC->siginfo->sigpending &= ~sigmask(SIGCHLD);
+    }
+
+    enableps();
+
+    return rv;
 }
 
 longword KERNalarm(int *ERRNO, longword seconds) {
