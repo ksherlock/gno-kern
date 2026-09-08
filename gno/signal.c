@@ -615,6 +615,11 @@ int KERNwait(int *ERRNO, union wait *stat) {
         }
         disableps();
     }
+
+    /* clear any pending SIGCHILD signals if the waitq is empty */
+    if (PROC->waitq == 0 && PROC->siginfo->signalmask & sigmask(SIGCHLD)) {
+        PROC->siginfo->sigpending &= ~sigmask(SIGCHLD);
+    }
     enableps();
     if (stat != NULL)
         *stat = waitinfo.status;
