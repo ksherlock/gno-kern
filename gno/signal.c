@@ -673,6 +673,22 @@ int KERNsigpause(int *ERRNO, longword mask) {
     return -1;
 }
 
+/* return the pending signals for the current process */
+unsigned long KERNsigpending(int *ERRNO) {
+
+    unsigned long pending;
+
+    if (kp->gsosDebug & 8)
+        kern_printf("%u: sigpending()\r\n", PROC->flpid);
+
+    asm { php sei }
+    pending = PROC->siginfo->sigpending;
+    asm { plp }
+
+    return pending;
+}
+
+
 #pragma toolparms 0
 
 #if 0
