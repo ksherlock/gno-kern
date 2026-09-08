@@ -409,12 +409,14 @@ int KERNgetppid(int *ERRNO)
 int KERNgetpgrp(int *ERRNO, int pid)
 /* get the pgrp field for a specified process */
 {
+    int mpid;
 
     if (kp->gsosDebug & 16)
         kern_printf("%u: getpgrp(%d)\r\n", PROC->flpid, pid); 
    
-    int mpid;
-    mpid = mapPID(pid);
+
+    if (pid == 0) mpid = Kgetpid();
+    else mpid = mapPID(pid);
     if (mpid == -1) {
         *ERRNO = ESRCH;
         return -1;
@@ -429,11 +431,17 @@ int KERNsetpgrp(int *ERRNO, int pgrp, int pid) {
     if (kp->gsosDebug & 16)
         kern_printf("%u: setpgrp(%d, %d)\r\n", PROC->flpid, pid, pgrp);
 
-    mpid = mapPID(pid);
+    if (pid == 0) mpid = Kgetpid();
+    else mpid = mapPID(pid);
+
+    /*
+     * TODO -- return ESRCH if pid is not self or a child.
+     */
     if (mpid == -1) {
         *ERRNO = ESRCH;
         return -1;
     }
+    /* posix says pgrp 0 should use the pid.  this doesn't make sense for gno/me */
     if (pgrp < 2 || pgrp >= 34) {
         *ERRNO = EINVAL;
         return -1;
