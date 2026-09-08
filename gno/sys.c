@@ -1480,7 +1480,7 @@ int KERNdup2(int *ERRNO, int filedes2, int filedes) {
     /* if they're duping a file to itself, pretend we did it */
     if (fd == fd2) {
         enableps();
-        return 0;
+        return filedes;
     }
     if (newFD->refNum) {
         cl[0] = 1;
@@ -1494,7 +1494,7 @@ int KERNdup2(int *ERRNO, int filedes2, int filedes) {
     newFD->refFlags &= ~rfCLOSEEXEC;
     ft->fdCount++; /* we created a new one... */
     enableps();
-    return 0;
+    return filedes;
 }
 
 #pragma databank 0
