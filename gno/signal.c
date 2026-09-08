@@ -664,6 +664,7 @@ int KERNsigpause(int *ERRNO, longword mask) {
     enableps();
     _resched();
     Ksigsetmask(ERRNO, oldmask);
+    *ERRNO = EINTR;
     return -1;
 }
 
