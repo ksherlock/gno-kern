@@ -288,12 +288,15 @@ struct rc {
 #ifdef NOTDEFINED
 void printFDS(fdtablePtr f) {
     int i;
+    int count;
     struct rc *r;
     extern struct rc *FINDREFNUM(int, int);
 
     fputc('[', stderr);
-    for (i = 0; i < 32; i++) {
+    count = child->openFiles->fdCount;
+    for (i = 0; count; i++) {
         if (f->fds[i].refNum) {
+            --count;
             fprintf(stderr, "(%d ", i);
             switch (f->fds[i].refType) {
             case rtGSOS:
@@ -1179,6 +1182,11 @@ int KERNkvmsetproc(int *ERRNO, struct kvmt *kd) {
     return SYSERR;
 }
 
+/*
+ * TODO -- manpage says:
+ * ``If the calling process is not in the foreground, it is sent SIGTTOU.''
+ * which doesn't seem to be happening.
+ */ 
 int KERNtcnewpgrp(int *ERRNO, int fdtty) {
     unsigned i, devNum, ttyPgrp;
     fdentryPtr tty;
@@ -1429,7 +1437,7 @@ int KERNdup(int *ERRNO, int filedes) {
     /* $$$  p = &(kp->procTable[Kgetpid()]); */
     fd = filedes - 1;
     ft = PROC->openFiles;
-    if ((filedes < 1) || (filedes > 32) || (ft->fds[fd].refNum == 0)) {
+    if ((filedes < 1) || (filedes > ft->fdTableSize) || (ft->fds[fd].refNum == 0)) {
         *ERRNO = EBADF;
         enableps();
         return -1;
@@ -1471,7 +1479,7 @@ int KERNdup2(int *ERRNO, int filedes2, int filedes) {
     fd2 = filedes2 - 1;
     newFD = &(ft->fds[fd2]);
     oldFD = &(ft->fds[fd]);
-    if ((filedes < 1) || (filedes2 < 1) || (filedes > 32) || (filedes2 > 32) ||
+    if ((filedes < 1) || (filedes2 < 1) || (filedes > ft->fdTableSize) || (filedes2 > ft->fdTableSize) ||
         (oldFD->refNum == 0)) {
         *ERRNO = EBADF;
         enableps();
