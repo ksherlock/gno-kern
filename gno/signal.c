@@ -174,12 +174,54 @@ int KERNkill(int *ERRNO, int signum, int pid) {
         return -1;
     }
 
+    /* -1 indicates the signal chould be send to every process (if there is permission...) */
+    if (pid == -1) {
+        procStatePtr p;
+        int count = 0;
+
+        /* send to every process */
+        // if (!signum) return 0;
+
+        mpid = Kgetpid();
+        int uid = PROC->p_uid;
+        if (PROC->p_euid == 0) uid = 0;
+        p = kp->procTable;
+        for (i = 1; i < NPROC; ++i, ++p) {
+            if (i == mpid) continue; /* exclude self */
+            if (!p->processState) continue;
+            if (uid == 0 || p->p_uid == uid) {
+                ++count;
+                if (signum) addsig(i, signum);
+            }
+        }
+        if (!count) {
+            errno = EPERM;
+            return -1;
+        }
+        _resched(); /* allow signals to be processed before we go on */
+        return 0;
+    }
+
     /* $$$ if (pid == 0) pid = -(kp->procTable[Kgetpid()].pgrp); */
-    if (pid == 0)
+    if (pid == 0) {
         pid = -(PROC->pgrp);
+        if (!pid) {
+            *ERRNO = ESRCH;
+            return -1;
+        }
+    }
+
     if (pid < 0) {
-        if (!signum) return 0;
+
         pid = 0 - pid;
+
+        /* return ESRCH if pg is invalid */
+        if (pid < 2 || pid >= 34 || pgrpInfo[pid-2].pgrpref == 0) {
+            *ERRNO = ESRCH;
+            return -1;
+        }
+
+        if (!signum) return 0;
         for (i = 0; i < NPROC; i++) {
             if ((kp->procTable[i].processState) &&
                 (kp->procTable[i].pgrp == pid))
