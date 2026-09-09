@@ -94,7 +94,7 @@ void init_htable(void) {
     line = malloc(128l);
     np = fopen("9/etc/namespace", "r");
     if (np != NULL) {
-        while (!feof(np)) {
+        for(;;) {
             if (pool_ind == NUM_NP) {
                 printf("warning: more than 20 entries in the /etc/namespace "
                        "file\n");
@@ -102,10 +102,11 @@ void init_htable(void) {
             }
             p = malloc(19);
             map = malloc(67);
-            fgets(line, 127, np);
+            pt = fgets(line, 127, np);
+            if (!pt) break;
             if ((line[0] == 0) || (line[0] == '\n'))
                 continue;
-            pt = line;
+
             /* find end of first string */
             while ((*pt != 0) && (!isspace(*pt)))
                 pt++;
