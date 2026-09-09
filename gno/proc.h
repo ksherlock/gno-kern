@@ -41,6 +41,7 @@
 #define rfPIPEWRITE 2 /* write end of the pipe */
 #define rfCLOSEEXEC 4 /* close this file on an exec() */
 #define rfP16NEWL 8   /* special prodos-16 newline mode */
+#define rfCLOSEFORK 16 /* close (don't copy) on fork() */
 
 typedef struct fdentry {
     word refNum;       /* refNum, pipeNum, ttyID, or sockNum */

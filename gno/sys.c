@@ -741,9 +741,15 @@ int commonFork(void (*funcptr)(void), word stackSize, int prio, char *name,
     k = 0;
     while (i) {
         if (j = child->openFiles->fds[k].refNum) {
-            if (child->openFiles->fds[k].refType == rtPIPE)
-                incPipe(child->openFiles->fds[k].refFlags, j);
-            IncRefnum(child->openFiles->fds[k].refType, j);
+            if (child->openFiles->fds[k].refFlags & rfCLOSEFORK) {
+                child->openFiles->fds[k].refNum = 0;
+                child->openFiles->fds[k].refType = 0;
+                --child->openFiles->fdCount;
+            } else {
+                if (child->openFiles->fds[k].refType == rtPIPE)
+                    incPipe(child->openFiles->fds[k].refFlags, j);
+                IncRefnum(child->openFiles->fds[k].refType, j);
+            }
             i--;
         }
         k++;
