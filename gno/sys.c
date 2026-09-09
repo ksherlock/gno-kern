@@ -249,9 +249,15 @@ unsigned x;
  *	allocFD does NOT adjust the fdCount field, as it's possible that
  *	we must unallocate the fd later due to an error and it saves
  *	a bit of code. (i.e. the caller must inc fdCount)
+ *
+ *
+ * now zeros out fields and populates the refLevel.
  */
+
 fdentryPtr allocFD(int *fdn) {
     fdtablePtr ft;
+    fdentryPtr fd;
+
     int i, j;
     // unsigned s;
 
@@ -262,11 +268,18 @@ fdentryPtr allocFD(int *fdn) {
 retry:
     while (j < ft->fdTableSize) {
         if (ft->fds[j].refNum == 0) {
-            ft->fds[j].refNum = -1; /* just to make this item look allocated */
+            fd = &(ft->fds[j]);
+            fd->refNum = -1; /* just to make this item look allocated */
+            fd->refLevel = ft->fdLevel | ft->fdLevelMode;
             enableps();
             if (fdn != NULL)
                 *fdn = j + 1;
-            return &(ft->fds[j]);
+            fd->refType = 0;
+            fd->refFlags = 0;
+            fd->NLenableMask = 0;
+            fd->NLnumChars = 0;
+            fd->NLtable = 0;
+            return fd;
         } else
             j++;
     }
