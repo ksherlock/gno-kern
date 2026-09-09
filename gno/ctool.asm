@@ -118,6 +118,8 @@ kernTable	START KERN2
 	dc i4'TIshutdown-1' ; 52
 	dc i4'TIsetreuid-1' ; 53
 	dc i4'TIsetregid-1' ; 54
+	dc i4'TIsigpending-1' ; 55
+	dc i4'TIwaitpid-1' ; 56
 
 TheEnd	anop
 	END
@@ -298,7 +300,7 @@ NULLTOOLFUNC	START KERN2
 	END
 
 tVersion	START KERN2
-	lda	#$0206
+	lda	#$0207
 	sta	7,s
 	lda	#0
 	clc
@@ -911,7 +913,27 @@ TIshutdown	START KERN2
 	tcs
 	jmp >KERNSHUTDOWN
 	END
-	
+
+** 2.0.7 **
+
+TIsigpending	START KERN2
+	tsc
+	clc
+	adc #3
+	tcs
+	jmp >KERNsigpending
+	END
+
+TIwaitpid	START KERN2
+	tsc
+	clc
+	adc #3
+	tcs
+	jmp >KERNWAITPID
+	END
+
+
+
 **********************************************************
 
 addsig	START
