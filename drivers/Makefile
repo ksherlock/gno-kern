@@ -2,7 +2,7 @@
 
 .INCLUDE: /src/gno/paths.mk
 
-TARGETS = $(OBJ_DIR)modem $(OBJ_DIR)printer $(OBJ_DIR)null
+TARGETS = $(OBJ_DIR)modem $(OBJ_DIR)printer $(OBJ_DIR)null $(OBJ_DIR)clipboard
 
 build: all
 
@@ -20,6 +20,10 @@ $(OBJ_DIR)printer: port.o psccf.o
 	chtyp -t 187 -a 32257 $@
 
 $(OBJ_DIR)null: null.o
+	$(LD) $(LDFLAGS) -o $@ $<
+	chtyp -t 187 -a 32257 $@
+
+$(OBJ_DIR)clipboard: clipboard.o
 	$(LD) $(LDFLAGS) -o $@ $<
 	chtyp -t 187 -a 32257 $@
 

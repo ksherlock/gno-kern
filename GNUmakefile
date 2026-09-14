@@ -18,7 +18,7 @@ MAKELIB = iix makelib
 
 VPATH = gno:drivers
 
-TARGETS = kern null console modem printer libsim sys/sim
+TARGETS = kern null console modem printer libsim sys/sim clipboard
 
 .PHONY: all
 all: $(TARGETS)
@@ -29,6 +29,10 @@ kern: $(addprefix o/,$(KERN_OBJS)) | o
 
 
 null: o/null.a
+	occ $(LDFLAGS) -o $@ $^
+	$(CHTYP) -t 187 -a 32257 $@
+
+clipboard: o/clipboard.a
 	occ $(LDFLAGS) -o $@ $^
 	$(CHTYP) -t 187 -a 32257 $@
 
